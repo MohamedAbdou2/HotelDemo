@@ -1,0 +1,10 @@
+﻿namespace HotelDemo.Data.Enums
+{
+    public enum PaymentStatusCode
+    {
+        Pending = 1,
+        Paid = 2,
+        Failed = 3,
+        Refunded = 4,
+    }
+}
