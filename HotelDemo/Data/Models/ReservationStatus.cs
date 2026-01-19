@@ -1,12 +1,11 @@
 ﻿using HotelDemo.Data.Enums;
-using System.ComponentModel.DataAnnotations;
 
 namespace HotelDemo.Data.Models
 {
-    public class PaymentMethod
+    public class ReservationStatus
     {
-        [Key]
-        public PaymentMethodCode Id { get; set; }
+        public ReservationStatusCode Id { get; set; }
+
         public string Name { get; set; } = null!;
 
         public bool IsAvailable { get; set; } = true;

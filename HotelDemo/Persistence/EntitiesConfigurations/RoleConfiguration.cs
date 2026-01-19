@@ -24,6 +24,9 @@ namespace HotelDemo.Persistence.EntitiesConfigurations
             builder.HasIndex(x => x.Name)
                    .IsUnique();
 
+            builder.Property(x => x.IsAvailable)
+                   .HasDefaultValue(true);
+
             builder.HasMany(x => x.UserRoles)
                    .WithOne(ur => ur.Role)
                    .HasForeignKey(ur => ur.RoleId)

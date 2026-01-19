@@ -8,6 +8,8 @@ namespace HotelDemo.Data.Models
         [Key]
         public UserRoleCode Id { get; set; }
         public string Name { get; set; } = null!;
+
+        public bool IsAvailable { get; set; } = true;
         public ICollection<UserRole> UserRoles { get; set; } = new HashSet<UserRole>();
 
     }

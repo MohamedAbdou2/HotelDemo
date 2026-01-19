@@ -1,4 +1,6 @@
-﻿namespace HotelDemo.Data.Models
+﻿using HotelDemo.Data.Enums;
+
+namespace HotelDemo.Data.Models
 {
     public class Reservation : BaseModel
     {
@@ -10,10 +12,11 @@
         public DateTime CheckOutDate { get; set; }
         public decimal TotalPrice { get; set; }
 
-        // TODo: reservation status enum 
-        // public ReservationStatus Status { get; set; }
-        //ToDo : one to one 
-        //public ICollection<Payment> Payments { get; set; } = new HashSet<Payment>();
+        public ReservationStatusCode ReservationStatusId { get; set; }
+        public ReservationStatus ReservationStatus { get; set; } = null!;
+        
+        public Guid? PaymentId { get; set; }
+        public Payment? Payment { get; set; }
 
     }
 }

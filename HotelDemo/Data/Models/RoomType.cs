@@ -10,7 +10,6 @@ namespace HotelDemo.Data.Models
         public string Name { get; set; } = null!;
         public string Description { get; set; } = null!;
         public decimal PriceMultiplier { get; set; }
-        //TODO : Do it in All Lookups
         public bool IsAvailable { get; set; } = true;
         public ICollection<Room> Rooms { get; set; } = new HashSet<Room>();
     }

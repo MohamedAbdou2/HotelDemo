@@ -8,5 +8,8 @@ namespace HotelDemo.Data.Models
         [Key]
         public PaymentStatusCode Id { get; set; }
         public string Name { get; set; } = null!;
+
+        public bool IsAvailable { get; set; } = true;
+
     }
 }

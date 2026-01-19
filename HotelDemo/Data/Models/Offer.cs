@@ -5,8 +5,8 @@
         public string Title { get; set; } = null!;
         public string Description { get; set; } = null!;
         public decimal DiscountPercentage { get; set; }
-        //ToDo:
-        // public bool IsActive { get; set; }
+
+         public bool IsActive { get; set; }
 
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }

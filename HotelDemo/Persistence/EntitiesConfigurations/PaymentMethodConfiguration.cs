@@ -22,6 +22,10 @@ namespace HotelDemo.Persistence.EntitiesConfigurations
                    .IsRequired()
                    .HasMaxLength(100);
 
+            builder.Property(x => x.IsAvailable)
+                   .IsRequired()
+                   .HasDefaultValue(true);
+
             builder.HasData(
                 new PaymentMethod
                 {

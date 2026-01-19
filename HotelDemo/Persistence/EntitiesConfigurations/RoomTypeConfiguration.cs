@@ -23,6 +23,10 @@ namespace HotelDemo.Persistence.EntitiesConfigurations
             builder.Property(rt => rt.PriceMultiplier)
                 .IsRequired()
                 .HasPrecision(5, 2);
+
+            builder.Property(rt => rt.IsAvailable)
+                .IsRequired()
+                .HasDefaultValue(true);
             builder.HasData(
                 new RoomType
                 {

@@ -35,6 +35,10 @@ namespace HotelDemo.Persistence.EntitiesConfigurations
                    .HasPrecision(5, 2)
                    .IsRequired();
 
+            builder.Property(x => x.IsActive)
+                     .IsRequired()
+                        .HasDefaultValue(true);
+
             builder.Property(x => x.StartDate)
                    .IsRequired();
 

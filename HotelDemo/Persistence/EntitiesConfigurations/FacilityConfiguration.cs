@@ -24,6 +24,9 @@ namespace HotelDemo.Persistence.EntitiesConfigurations
             builder.Property(x => x.Description)
                    .HasMaxLength(500);
 
+            builder.Property(x=>x.IsAvailable)
+                   .HasDefaultValue(true);
+
             builder.HasMany(r => r.RoomFacilities)
                    .WithOne(rf => rf.Facility)
                    .HasForeignKey(rf => rf.FacilityId);

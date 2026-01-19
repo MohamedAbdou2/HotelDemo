@@ -21,9 +21,10 @@ namespace HotelDemo.Persistence.EntitiesConfigurations
                    .IsRequired();
 
             builder.HasOne(x => x.Reservation)
-                   .WithMany(r => r.Payments)
-                   .HasForeignKey(x => x.ReservationId)
+                   .WithOne(r => r.Payment)
+                   .HasForeignKey<Reservation>(x => x.PaymentId)
                    .OnDelete(DeleteBehavior.Restrict);
+
 
             builder.HasOne(x => x.PaymentMethod)
                    .WithMany()
