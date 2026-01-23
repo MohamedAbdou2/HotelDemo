@@ -1,4 +1,4 @@
-﻿using HotelDemo.Data.Enums;
+﻿using Domain.Enums;
 
 namespace HotelDemo.ViewModels
 {

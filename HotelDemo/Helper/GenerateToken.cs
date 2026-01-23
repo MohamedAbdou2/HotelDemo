@@ -1,7 +1,6 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using HotelDemo.Data.Enums;
 using Microsoft.IdentityModel.Tokens;
 
 namespace HotelDemo.Helper
