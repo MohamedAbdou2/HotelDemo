@@ -1,0 +1,101 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Text;
+using System.Threading.Tasks;
+using Domain.Models;
+using Domain.Repositories;
+using HotelDemo.Persistence;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
+
+namespace Infrastructure.Repositories
+{
+    public class GenericRepository<T> : IGenericRepository<T> where T : BaseModel
+    {
+        private readonly ApplicationDbContext context;
+
+        public GenericRepository(ApplicationDbContext context)
+        {
+            this.context = context;
+        }
+        public async Task<bool> Add(T entity)
+        {
+            await context.Set<T>().AddAsync(entity);
+            await context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<IQueryable<T>> GetAll(Expression<Func<T, bool>>? creiteria = null)
+        {
+            var query = context.Set<T>().Where(x => !x.IsDeleted);
+
+            if (creiteria != null)
+            {
+
+                query = query.Where(creiteria);
+
+            }
+
+            return query;
+        }
+
+        public async Task<IQueryable<T>> GetbyId(Guid Id)
+        {
+
+            var query = context.Set<T>().AsQueryable();
+
+            query = query.Where(x => !x.IsDeleted && x.Id == Id);
+
+            return query;
+        }
+
+        public async Task<bool> UpdateIncludeAsync(T entity, params string[] modifiedParams)
+        {
+            var local = context.Set<T>().Local.FirstOrDefault(x => x.Id == entity.Id);
+            EntityEntry entityEntry;
+
+            if (local == null)
+            {
+                context.Set<T>().Attach(entity);
+                entityEntry = context.Set<T>().Entry(entity);
+            }
+            else
+            {
+                entityEntry = context.ChangeTracker.Entries<T>()
+                    .First(x => x.Entity.Id == entity.Id);
+            }
+
+            foreach (var propName in modifiedParams)
+            {
+                var propInfo = entity.GetType().GetProperty(propName);
+                if (propInfo != null)
+                {
+                    entityEntry.Property(propName).CurrentValue = propInfo.GetValue(entity);
+                    entityEntry.Property(propName).IsModified = true;
+                }
+            }
+
+            var result = await context.SaveChangesAsync();
+            return result > 0 ? true : false;
+
+        }
+
+        public async Task<bool> IsExist(Guid Id)
+        {
+            await context.Set<T>().AnyAsync(x => x.Id == Id && !x.IsDeleted);
+            await context.SaveChangesAsync();
+
+            return true;
+        }
+        public async Task<bool> Delete(Guid Id)
+        {
+            var entityqurable = await GetbyId(Id);
+            var entity = await entityqurable.FirstOrDefaultAsync();
+            var result = context.Remove(entity);
+            await context.SaveChangesAsync();
+            return result != null ? true : false;
+        }
+    }
+}
