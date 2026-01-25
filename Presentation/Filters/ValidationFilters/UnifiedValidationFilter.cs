@@ -1,5 +1,6 @@
-﻿using Examination_System.Models.Enums;
-using Examination_System.ViewModels;
+﻿/*
+using Domain.Enums;
+using HotelDemo.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 
@@ -23,9 +24,9 @@ namespace HotelDemo.ValidationFilters
                 .SelectMany(v => v.Errors)
                 .Select(e => e.ErrorMessage);
 
-                var response = ResponseViewModel<object>.Failure(
-                    ErrorCode.ValidationError,
-                    string.Join("\n", errors)
+                var response = new ResponseViewModel<object>.Fail(
+                  //  ErrorCode.ValidationError,
+                   message : string.Join("\n", errors)
                 );
 
                 context.Result = new BadRequestObjectResult(response);
@@ -40,7 +41,7 @@ namespace HotelDemo.ValidationFilters
                 {
                     if (guidValue == Guid.Empty)
                     {
-                        var response = ResponseViewModel<object>.Failure(
+                        var response = ResponseViewModel<object>.Fail(
                             ErrorCode.BadRequest,
                             $"{argument.Key} cannot be empty."
                         );
@@ -56,3 +57,4 @@ namespace HotelDemo.ValidationFilters
         }
     }
 }
+*/

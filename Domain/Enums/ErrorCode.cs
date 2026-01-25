@@ -2,6 +2,6 @@
 {
     public enum ErrorCode
     {
-
+        ValidationError = 422,
     }
 }

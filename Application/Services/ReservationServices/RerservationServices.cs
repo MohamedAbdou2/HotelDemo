@@ -1,4 +1,5 @@
 ﻿using Application.Dtos.Reservation;
+using Application.Interfaces;
 using AutoMapper;
 using Domain.Models;
 using Domain.Repositories;
@@ -17,7 +18,7 @@ namespace Application.Services.ReservationServices
         private readonly IGenericRepository<Reservation> _reservationRepository;
         private readonly IGenericRepository<Payment> _paymentRepository;
         private readonly IMapper mapper;
-        private readonly IValidator<ReservationDto> _reservationValidator
+        private readonly IValidator<ReservationDto> _reservationValidator;
 
         public Task<ReservationResponseDto> CreateReservation(ReservationDto reservationDto)
         {

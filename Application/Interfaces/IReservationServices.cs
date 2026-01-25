@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.Services.ReservationServices
+namespace Application.Interfaces
 {
     public interface IReservationServices
     {
