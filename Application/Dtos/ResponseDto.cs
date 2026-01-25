@@ -17,7 +17,7 @@ namespace Application.Dtos
 
         public ErrorCode? ErrorCode { get; set; }
 
-        public ResponseDto<T> Success(T data, string message = null)
+        public static ResponseDto<T> Success(T data, string message = null)
         {
             return new ResponseDto<T>
             {
@@ -29,7 +29,7 @@ namespace Application.Dtos
 
         }
 
-        public ResponseDto<T> Fail(ErrorCode? errorcode, string message)
+        public static ResponseDto<T> Fail(ErrorCode? errorcode, string message)
         {
             return new ResponseDto<T>
             {

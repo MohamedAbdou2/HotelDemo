@@ -45,7 +45,7 @@ namespace Application.Services
         {
             var isUserExist = await userRepository.IsExist(x=>x.Email == dto.email);
             if (isUserExist)
-                return new ResponseDto<bool>().Fail(ErrorCode.EmailalreadyExist, "A user with this eamil is already resgistered");
+                return ResponseDto<bool>.Fail(ErrorCode.EmailalreadyExist, "A user with this eamil is already resgistered");
 
             var user = mapper.Map<User>(dto);
             var result = await userRepository.Add(user);
@@ -61,24 +61,24 @@ namespace Application.Services
             
           result =   await userRoleRepository.Add(userRole);
 
-            return new ResponseDto<bool>().Success(result, "Registration successfull");
+            return ResponseDto<bool>.Success(result, "Registration successfull");
         }
         public async Task<ResponseDto<string>> Login(LoginDto dto)
         {
             var userQurable = await userRepository.GetAll(x=>x.Email==dto.Email);
             var user = userQurable.FirstOrDefault();
             if (user == null)
-                return new ResponseDto<string>().Fail(ErrorCode.UserNotFound, "User is either not registered or is deleted");
+                return ResponseDto<string>.Fail(ErrorCode.UserNotFound, "User is either not registered or is deleted");
 
             if (dto.Email != user.Email && BCrypt.Net.BCrypt.HashPassword(dto.Password) != user.PasswordHash)
-                return new ResponseDto<string>().Fail(ErrorCode.UserNotFound, "wrong credentials");
+                return ResponseDto<string>.Fail(ErrorCode.UserNotFound, "wrong credentials");
 
             var rolesQurable =await userRoleRepository.GetAll(x=>x.UserId==user.Id);
             var roles = rolesQurable.Select(x=>x.Role.Name).ToList();
 
             var token = new GenerateToken(jwtSettings).GenerateJwtToken(user.Id.ToString(), user.Email, roles);
 
-            return new ResponseDto<string>().Success(token);
+            return ResponseDto<string>.Success(token);
         }
 
         public async Task<ResponseDto<string>> ForgetPassword(string email)
@@ -87,7 +87,7 @@ namespace Application.Services
             var user = userQurable.FirstOrDefault();
 
             if (user==null)
-                return new ResponseDto<string>().Fail(ErrorCode.EmailNotRegistered, "This email is not registered");
+                return  ResponseDto<string>.Fail(ErrorCode.EmailNotRegistered, "This email is not registered");
 
             var otp = new UserOtp()
             {
@@ -98,7 +98,7 @@ namespace Application.Services
             };
             await new MailSender().SendAsync(email, "Password Reset", $"{otp.otp}");
 
-            return new ResponseDto<string>().Success("Check your email");
+            return ResponseDto<string>.Success("Check your email");
 
         }
 
@@ -108,7 +108,7 @@ namespace Application.Services
             var useropt = userOtpQuerable.FirstOrDefault();
 
             if (useropt == null || useropt.ExpiresAt > DateTime.Now)
-                return new ResponseDto<bool>().Fail(ErrorCode.InvalidOtp, "otp is either Invalid or expired");
+                return ResponseDto<bool>.Fail(ErrorCode.InvalidOtp, "otp is either Invalid or expired");
 
             var user = new User
             {
@@ -126,7 +126,7 @@ namespace Application.Services
 
             await userRepository.UpdateIncludeAsync(user, nameof(User.IsDeleted));
 
-            return new ResponseDto<bool>().Success(true, "Password reset successfull");
+            return ResponseDto<bool>.Success(true, "Password reset successfull");
         }
     }
 
