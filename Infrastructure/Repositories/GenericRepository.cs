@@ -9,6 +9,7 @@ using Domain.Repositories;
 using HotelDemo.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Infrastructure.Repositories
 {
@@ -23,8 +24,8 @@ namespace Infrastructure.Repositories
         public async Task<bool> Add(T entity)
         {
             await context.Set<T>().AddAsync(entity);
-            await context.SaveChangesAsync();
-            return true;
+           var result =  await context.SaveChangesAsync();
+            return result > 0 ;
         }
 
         public async Task<IQueryable<T>> GetAll(Expression<Func<T, bool>>? creiteria = null)
@@ -78,24 +79,22 @@ namespace Infrastructure.Repositories
             }
 
             var result = await context.SaveChangesAsync();
-            return result > 0 ? true : false;
+            return result > 0;
 
         }
 
-        public async Task<bool> IsExist(Guid Id)
+        public async Task<bool> IsExist(Expression<Func<T,bool>> creiteria)
         {
-            await context.Set<T>().AnyAsync(x => x.Id == Id && !x.IsDeleted);
-            await context.SaveChangesAsync();
-
-            return true;
+           var result =  await context.Set<T>().AnyAsync(creiteria);
+            return result;
         }
         public async Task<bool> Delete(Guid Id)
         {
             var entityqurable = await GetbyId(Id);
             var entity = await entityqurable.FirstOrDefaultAsync();
-            var result = context.Remove(entity);
-            await context.SaveChangesAsync();
-            return result != null ? true : false;
+             context.Remove(entity);
+           var result = await context.SaveChangesAsync();
+            return result > 0;
         }
     }
 }
