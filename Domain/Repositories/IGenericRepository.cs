@@ -14,15 +14,14 @@ namespace Domain.Repositories
     {
         Task<bool> Add(T entity);
 
-        IQueryable<T> GetAll(Expression<Func<T, bool>>? creiteria = null);
+        Task<IQueryable<T>> GetAll(Expression<Func<T, bool>>? creiteria = null);
 
-        IQueryable<T> GetbyId(Guid Id);
+        Task<IQueryable<T>> GetbyId(Guid Id);
         Task<bool> UpdateIncludeAsync(T entity, params string[] modifiedParams);
 
         Task<bool> IsExist(Expression<Func<T,bool>> creiteria);
 
         Task<bool> Delete(Guid Id);
-
 
     }
 }
