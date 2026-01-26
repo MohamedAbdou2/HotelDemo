@@ -1,4 +1,5 @@
-﻿using Application.Dtos.Reservation;
+﻿using Application.Dtos;
+using Application.Dtos.Reservation;
 using Application.Interfaces;
 using AutoMapper;
 using Domain.Models;
@@ -17,12 +18,33 @@ namespace Application.Services.ReservationServices
         private readonly IGenericRepository<Room> _roomRepository;
         private readonly IGenericRepository<Reservation> _reservationRepository;
         private readonly IGenericRepository<Payment> _paymentRepository;
-        private readonly IMapper mapper;
+        private readonly IMapper _mapper;
         private readonly IValidator<ReservationDto> _reservationValidator;
 
-        public Task<ReservationResponseDto> CreateReservation(ReservationDto reservationDto)
+        public RerservationServices(IGenericRepository<Room> roomRepository,
+            IGenericRepository<Reservation> reservationRepository,
+            IGenericRepository<Payment> paymentRepository,
+            IMapper mapper,
+            IValidator<ReservationDto> reservationValidator)
         {
+            _roomRepository = roomRepository;
+            _reservationRepository = reservationRepository;
+            _paymentRepository = paymentRepository;
+            _mapper = mapper;
+            _reservationValidator = reservationValidator;
+        }
+
+        public Task<ResponseDto<ReservationResponseDto>> CreateReservation(ReservationDto reservationDto)
+        {
+            var validationResult = _reservationValidator.Validate(reservationDto);
+            /*if (!validationResult.IsValid)
+            {
+                return;
+            }*/
             throw new NotImplementedException();
         }
+     /*   Background Service: تعمل كل 10 دقائق(باستخدام IHostedService أو Hangfire).
+
+الوظيفة: تبحث عن أي حجز حالته Pending ومر على إنشائه أكثر من 20 دقيقة، وتقوم بتغيير حالته إلى Cancelled أو Expired لتعود الغرفة متاحة للآخرين.*/
     }
 }

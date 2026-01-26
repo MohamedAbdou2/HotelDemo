@@ -1,4 +1,5 @@
-﻿using Application.Dtos.Reservation;
+﻿using Application.Dtos;
+using Application.Dtos.Reservation;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,6 +10,7 @@ namespace Application.Interfaces
 {
     public interface IReservationServices
     {
-        Task<ReservationResponseDto> CreateReservation(ReservationDto reservationDto);
+       
+        Task<ResponseDto<ReservationResponseDto>> CreateReservation(ReservationDto reservationDto);
     }
 }
