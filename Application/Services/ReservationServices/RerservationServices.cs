@@ -11,6 +11,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+
 namespace Application.Services.ReservationServices
 {
     public class RerservationServices : IReservationServices
@@ -34,17 +35,34 @@ namespace Application.Services.ReservationServices
             _reservationValidator = reservationValidator;
         }
 
-        public Task<ResponseDto<ReservationResponseDto>> CreateReservation(ReservationDto reservationDto)
+        public async Task<ResponseDto<ReservationResponseDto>> CreateReservation(ReservationDto reservationDto)
         {
             var validationResult = _reservationValidator.Validate(reservationDto);
-            /*if (!validationResult.IsValid)
+            if (!validationResult.IsValid)
             {
-                return;
-            }*/
+                return ResponseDto<ReservationResponseDto>.ValidaitonFial(validationResult);
+            }
+           // if(!await RoomAvailableAsync(reservationDto.RoomId))
             throw new NotImplementedException();
         }
-     /*   Background Service: تعمل كل 10 دقائق(باستخدام IHostedService أو Hangfire).
 
-الوظيفة: تبحث عن أي حجز حالته Pending ومر على إنشائه أكثر من 20 دقيقة، وتقوم بتغيير حالته إلى Cancelled أو Expired لتعود الغرفة متاحة للآخرين.*/
+        /*private async Task<bool> RoomAvailableAsync(Guid roomId)
+        {
+            return await _roomRepository.GetbyId(roomId).FirstOrDefaultAsync().IsAvailable;
+        }*/
+
+
+
+
+
+
+
+        /*   Background Service: تعمل كل 10 دقائق(باستخدام IHostedService أو Hangfire).
+
+   الوظيفة: تبحث عن أي حجز حالته Pending ومر على إنشائه أكثر من 20 دقيقة، وتقوم بتغيير حالته إلى Cancelled أو Expired لتعود الغرفة متاحة للآخرين.*/
     }
+
+
+
+    
 }
