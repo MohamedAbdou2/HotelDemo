@@ -12,7 +12,7 @@ namespace HotelDemo.ViewModels
 
         public ErrorCode? ErrorCode { get; set; }
 
-        public ResponseViewModel<T> Success(T data, string message = null)
+        public static ResponseViewModel<T> Success(T data, string message = null)
         {
             return new ResponseViewModel<T>
             {
@@ -24,7 +24,7 @@ namespace HotelDemo.ViewModels
 
         }
 
-        public ResponseViewModel<T> Fail(ErrorCode? errorcode, string message)
+        public static ResponseViewModel<T> Fail(ErrorCode? errorcode, string message)
         {
             return new ResponseViewModel<T>
             {
