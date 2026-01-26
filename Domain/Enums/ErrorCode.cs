@@ -2,6 +2,8 @@
 {
     public enum ErrorCode
     {
+        BadRequest,
+        ValidationError
         //User 
         EmailalreadyExist = 101,
         EmailNotRegistered = 102,
