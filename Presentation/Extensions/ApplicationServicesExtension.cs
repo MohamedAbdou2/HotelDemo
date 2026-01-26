@@ -2,17 +2,21 @@
 using AutoMapper;
 using FluentValidation;
 using FluentValidation.AspNetCore;
+using HotelDemo.Helper;
 using HotelDemo.Persistence;
 using HotelDemo.ValidationFilters;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 using System.Text.Json.Serialization;
 
 namespace Presentation.Extensions
 {
     public static class ApplicationServicesExtension
     {
-        public static void AddApplicationServices(this IServiceCollection services , IConfiguration configuration)
+        public static void AddApplicationServices(this IServiceCollection services, IConfiguration configuration)
         {// Add services to the container.
 
             services.AddControllers(options =>
@@ -27,7 +31,7 @@ namespace Presentation.Extensions
                 options.SuppressModelStateInvalidFilter = true;
             });
 
-            
+
             var connectionString = configuration.GetConnectionString("DefaultConnection") ??
                            throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
@@ -40,6 +44,28 @@ namespace Presentation.Extensions
             {
                  typeof(Program).Assembly,
                  typeof(IApplicationMarker).Assembly
+            });
+
+            services.Configure<JwtSettings>(configuration.GetSection("Jwt"));
+
+            services.AddAuthentication(opt => opt.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(
+            opt =>
+            {
+                var jwtsettings = configuration.GetSection("Jwt").Get<JwtSettings>();
+                var key = Encoding.UTF8.GetBytes(jwtsettings.Key);
+                opt.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+                {
+
+                    ValidIssuer = jwtsettings.Issuer,
+                    ValidAudience = jwtsettings.Audience,
+                    IssuerSigningKey = new SymmetricSecurityKey(key),
+                    ValidateIssuerSigningKey = true,
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                };
+
             });
             // AutoMapper - scans assembly for all Profile classes
             services.AddAutoMapper(typeof(Profile).Assembly);
