@@ -35,6 +35,7 @@ namespace Application.MappingProfiles.Room
                     {
                         PictureUrl = url
                     })));
+
         }
     }
 }

@@ -1,4 +1,6 @@
-using System.Text;
+using Application;
+using Application.Interfaces;
+using FluentValidation;
 using HotelDemo.Helper;
 using HotelDemo.Persistence;
 using Infrastructure.DataSeeding;
@@ -6,12 +8,15 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
 builder.Services.AddControllers();
+        
+
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ??
     throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
@@ -20,6 +25,12 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 
 builder.Services.AddHttpContextAccessor();
+
+builder.Services.AddValidatorsFromAssemblyContaining<Program>();
+builder.Services.AddApplication();
+
+
+
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
