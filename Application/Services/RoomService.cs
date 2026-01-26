@@ -28,7 +28,7 @@ namespace Application.Services
         {
             var Query = await _roomRepository.GetAll();
             var rooms = Query.ProjectTo<GetRoomResponseDto>(_mapper.ConfigurationProvider).ToList();
-            var response =   ResponseDto<IEnumerable<GetRoomResponseDto>>.Success(rooms);
+            var response = ResponseDto<IEnumerable<GetRoomResponseDto>>.Success(rooms);
             return response;
 
         }
@@ -69,7 +69,7 @@ namespace Application.Services
             }
             var roomToUpdate = _mapper.Map<Room>(dto);
             roomToUpdate.Id = roomId;
-            var propsToUpdate = new []{ nameof(Room.PricePerNight), nameof(Room.IsAvailable), nameof(Room.RoomTypeId) };
+            var propsToUpdate = new[] { nameof(Room.PricePerNight), nameof(Room.IsAvailable), nameof(Room.RoomTypeId) };
             var result = await _roomRepository.UpdateIncludeAsync(roomToUpdate, propsToUpdate);
             if (!result)
             {
@@ -96,5 +96,35 @@ namespace Application.Services
         }
 
 
+
+        public async Task<PaginatedResponseDto<IEnumerable<GetRoomResponseDto>>> GetRoomsByFilter(RoomFilterRequestDto filterDto)
+        {
+            var query = await _roomRepository.GetAll(r =>
+                (!filterDto.RoomTypeId.HasValue || r.RoomTypeId == filterDto.RoomTypeId) &&
+                (!filterDto.MinPrice.HasValue || r.PricePerNight >= filterDto.MinPrice) &&
+                (!filterDto.MaxPrice.HasValue || r.PricePerNight <= filterDto.MaxPrice) &&
+                (!filterDto.IsAvailable.HasValue || r.IsAvailable == filterDto.IsAvailable)
+            );
+            var rooms = query.ProjectTo<GetRoomResponseDto>(_mapper.ConfigurationProvider).ToList();
+            var totalCount = rooms.Count;
+            var pagedRooms = rooms
+                .Skip((filterDto.PageNumber - 1) * filterDto.PageSize)
+                .Take(filterDto.PageSize)
+                .ToList();
+            var totalPages = (int)Math.Ceiling(totalCount / (double)filterDto.PageSize);
+            var response = new PaginatedResponseDto<IEnumerable<GetRoomResponseDto>>
+            {
+                Data = pagedRooms,
+                PageNumber = filterDto.PageNumber,
+                PageSize = filterDto.PageSize,
+                Count = totalCount,
+                TotalPages = totalPages
+            };
+
+            return response;
+
+
+        }
     }
-}
+
+    }
