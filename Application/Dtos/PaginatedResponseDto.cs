@@ -11,9 +11,9 @@ namespace Application.Dtos
     public class PaginatedResponseDto<T> : ResponseDto<T>
     {
         public PaginatedResponseDto(T? data, bool isSuccess, string message, ErrorCode? errorCode)
-            :base(data, isSuccess, message,errorCode)
+            : base(data, isSuccess, message, errorCode)
         {
-            
+
         }
         public int PageNumber { get; set; }
 
