@@ -24,11 +24,11 @@ namespace Infrastructure.Repositories
         public async Task<bool> Add(T entity)
         {
             await context.Set<T>().AddAsync(entity);
-            var result = await context.SaveChangesAsync();
-            return result > 0;
+           var result =  await context.SaveChangesAsync();
+            return result > 0 ;
         }
 
-        public IQueryable<T> GetAll(Expression<Func<T, bool>>? creiteria = null)
+        public async Task<IQueryable<T>> GetAll(Expression<Func<T, bool>>? creiteria = null)
         {
             var query = context.Set<T>().Where(x => !x.IsDeleted);
 
@@ -42,7 +42,7 @@ namespace Infrastructure.Repositories
             return query;
         }
 
-        public IQueryable<T> GetbyId(Guid Id)
+        public async Task<IQueryable<T>> GetbyId(Guid Id)
         {
 
             var query = context.Set<T>().AsQueryable();
@@ -83,16 +83,17 @@ namespace Infrastructure.Repositories
 
         }
 
-        public async Task<bool> IsExist(Expression<Func<T, bool>> creiteria)
+        public async Task<bool> IsExist(Expression<Func<T,bool>> creiteria)
         {
-            var result = await context.Set<T>().AnyAsync(creiteria);
+           var result =  await context.Set<T>().AnyAsync(creiteria);
             return result;
         }
         public async Task<bool> Delete(Guid Id)
         {
-            var entity= await GetbyId(Id).FirstOrDefaultAsync();
+            var entityqurable = await GetbyId(Id);
+            var entity = await entityqurable.FirstOrDefaultAsync();
              context.Remove(entity);
-            var result = await context.SaveChangesAsync() ;
+           var result = await context.SaveChangesAsync();
             return result > 0;
         }
     }

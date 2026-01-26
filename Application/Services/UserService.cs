@@ -15,8 +15,6 @@ using HotelDemo.Helper;
 using BCrypt.Net;
 using System.Security.Cryptography;
 using System.Numerics;
-using Microsoft.EntityFrameworkCore;
-
 
 namespace Application.Services
 {
@@ -29,11 +27,11 @@ namespace Application.Services
         private readonly IReadOnlyRepository<Role> roleRepository;
         private readonly IGenericRepository<UserRole> userRoleRepository;
 
-        public UserService(IGenericRepository<User> userRepository,
-            IMapper mapper,
+        public UserService(IGenericRepository<User> userRepository, 
+            IMapper mapper, 
             JwtSettings jwtSettings,
             IGenericRepository<UserOtp> userOtpRepo,
-            IReadOnlyRepository<Role> roleRepository,
+            IReadOnlyRepository<Role> roleRepository, 
             IGenericRepository<UserRole> userRoleRepository)
         {
             this.userRepository = userRepository;
@@ -45,37 +43,38 @@ namespace Application.Services
         }
         public async Task<ResponseDto<bool>> Register(RegisterDto dto)
         {
-            var isUserExist = await userRepository.IsExist(x => x.Email == dto.email);
+            var isUserExist = await userRepository.IsExist(x=>x.Email == dto.email);
             if (isUserExist)
                 return ResponseDto<bool>.Fail(ErrorCode.EmailalreadyExist, "A user with this eamil is already resgistered");
 
             var user = mapper.Map<User>(dto);
             var result = await userRepository.Add(user);
 
-            var customerRole = await roleRepository.GetAll(x => x.Name == "Customer");
+           var customerRole =await roleRepository.GetAll(x => x.Name == "Customer");
             var customerRoleId = customerRole.FirstOrDefault()?.Id;
 
             var userRole = new UserRole
             {
                 UserId = user.Id,
-                RoleId = customerRoleId.Value,
+                RoleId =  customerRoleId.Value,
             };
-
-            result = await userRoleRepository.Add(userRole);
+            
+          result =   await userRoleRepository.Add(userRole);
 
             return ResponseDto<bool>.Success(result, "Registration successfull");
         }
         public async Task<ResponseDto<string>> Login(LoginDto dto)
         {
-            var user =await userRepository.GetAll(x => x.Email == dto.Email).FirstOrDefaultAsync();
+            var userQurable = await userRepository.GetAll(x=>x.Email==dto.Email);
+            var user = userQurable.FirstOrDefault();
             if (user == null)
                 return ResponseDto<string>.Fail(ErrorCode.UserNotFound, "User is either not registered or is deleted");
 
             if (dto.Email != user.Email && BCrypt.Net.BCrypt.HashPassword(dto.Password) != user.PasswordHash)
                 return ResponseDto<string>.Fail(ErrorCode.UserNotFound, "wrong credentials");
 
-            var rolesQurable =  userRoleRepository.GetAll(x => x.UserId == user.Id);
-            var roles = rolesQurable.Select(x => x.Role.Name).ToList();
+            var rolesQurable =await userRoleRepository.GetAll(x=>x.UserId==user.Id);
+            var roles = rolesQurable.Select(x=>x.Role.Name).ToList();
 
             var token = new GenerateToken(jwtSettings).GenerateJwtToken(user.Id.ToString(), user.Email, roles);
 
@@ -84,9 +83,10 @@ namespace Application.Services
 
         public async Task<ResponseDto<string>> ForgetPassword(string email)
         {
-            var user = await userRepository.GetAll(x => x.Email == email).FirstOrDefaultAsync();
+            var userQurable = await userRepository.GetAll(x => x.Email ==email);
+            var user = userQurable.FirstOrDefault();
 
-            if (user == null)
+            if (user==null)
                 return ResponseDto<string>.Fail(ErrorCode.EmailNotRegistered, "This email is not registered");
 
             var otp = new UserOtp()
@@ -104,14 +104,15 @@ namespace Application.Services
 
         public async Task<ResponseDto<bool>> ResetPassword(ResetPasswordDto dto)
         {
-            var userOtp = await userotprepo.GetAll(x => x.otp == dto.otp).FirstOrDefaultAsync();
+            var userOtpQuerable = await userotprepo.GetAll(x => x.otp == dto.otp);
+            var useropt = userOtpQuerable.FirstOrDefault();
 
-            if (userOtp == null || userOtp.ExpiresAt > DateTime.Now)
+            if (useropt == null || useropt.ExpiresAt > DateTime.Now)
                 return ResponseDto<bool>.Fail(ErrorCode.InvalidOtp, "otp is either Invalid or expired");
 
             var user = new User
             {
-                Id = userOtp.UserId,
+                Id = useropt.UserId,
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.password)
             };
 
@@ -119,7 +120,7 @@ namespace Application.Services
 
             var otp = new UserOtp
             {
-                Id = userOtp.Id,
+                Id= useropt.Id,
                 IsDeleted = true,
             };
 
