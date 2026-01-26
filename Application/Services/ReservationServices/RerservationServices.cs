@@ -2,6 +2,7 @@
 using Application.Dtos.Reservation;
 using Application.Interfaces;
 using AutoMapper;
+using Domain.Enums;
 using Domain.Models;
 using Domain.Repositories;
 using FluentValidation;
@@ -28,6 +29,7 @@ namespace Application.Services.ReservationServices
             IMapper mapper,
             IValidator<ReservationDto> reservationValidator)
         {
+
             _roomRepository = roomRepository;
             _reservationRepository = reservationRepository;
             _paymentRepository = paymentRepository;
@@ -42,14 +44,21 @@ namespace Application.Services.ReservationServices
             {
                 return ResponseDto<ReservationResponseDto>.ValidaitonFial(validationResult);
             }
-           // if(!await RoomAvailableAsync(reservationDto.RoomId))
+            if (!await RoomAvailableAsync(reservationDto.RoomId))
+            {
+                return ResponseDto<ReservationResponseDto>.Fail(ErrorCode.NotAvailableRoom,
+                    "this Room Is not availabe for reservation Now");
+            }
+
+
             throw new NotImplementedException();
         }
 
-        /*private async Task<bool> RoomAvailableAsync(Guid roomId)
+        private async Task<bool> RoomAvailableAsync(Guid roomId)
         {
-            return await _roomRepository.GetbyId(roomId).FirstOrDefaultAsync().IsAvailable;
-        }*/
+            var room = await _roomRepository.GetbyId(roomId);
+            return room.Any(r => r.IsAvailable == true);
+        }
 
 
 
@@ -64,5 +73,5 @@ namespace Application.Services.ReservationServices
 
 
 
-    
+
 }

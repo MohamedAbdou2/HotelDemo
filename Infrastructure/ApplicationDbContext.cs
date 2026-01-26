@@ -14,7 +14,6 @@ namespace HotelDemo.Persistence
         {
             _httpContextAccessor = httpContextAccessor;
         }
-
         public DbSet<User> Users { get; set; }
         public DbSet<Role> Roles { get; set; }
         public DbSet<UserRole> UserRoles { get; set; }
@@ -29,15 +28,14 @@ namespace HotelDemo.Persistence
         public DbSet<RoomOffer> RoomOffers { get; set; }
         public DbSet<RoomPicture> RoomPictures { get; set; }
         public DbSet<Report> Reports { get; set; }
-
         public DbSet<RoomType> RoomTypes { get; set; }
         public DbSet<PaymentMethod> PaymentMethods { get; set; }
         public DbSet<PaymentStatus> PaymentStatuses { get; set; }
         public DbSet<Facility> Facilities { get; set; }
         public DbSet<ReportType> ReportTypes { get; set; }
         public DbSet<ReportPeriod> ReportPeriods { get; set; }
-
         public DbSet<RoomFacility> RoomFacilities { get; set; }
+        public DbSet<UserOtp> Otp { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
