@@ -15,6 +15,8 @@ using HotelDemo.Helper;
 using BCrypt.Net;
 using System.Security.Cryptography;
 using System.Numerics;
+using Microsoft.EntityFrameworkCore;
+
 
 namespace Application.Services
 {
@@ -50,23 +52,23 @@ namespace Application.Services
             var user = mapper.Map<User>(dto);
             var result = await userRepository.Add(user);
 
-           var customerRole =await roleRepository.GetAll(x => x.Name == "Customer");
-            var customerRoleId = customerRole.FirstOrDefault()?.Id;
+           var customerRoleQuerable =await roleRepository.GetAll(x => x.Name == "Customer");
+            var customerRole = await customerRoleQuerable.FirstOrDefaultAsync();
 
             var userRole = new UserRole
             {
                 UserId = user.Id,
-                RoleId =  customerRoleId.Value,
+                RoleId = customerRole.Id,
             };
             
-          result =   await userRoleRepository.Add(userRole);
+           result =   await userRoleRepository.Add(userRole);
 
             return ResponseDto<bool>.Success(result, "Registration successfull");
         }
         public async Task<ResponseDto<string>> Login(LoginDto dto)
         {
             var userQurable = await userRepository.GetAll(x=>x.Email==dto.Email);
-            var user = userQurable.FirstOrDefault();
+            var user = await userQurable.FirstOrDefaultAsync();
             if (user == null)
                 return ResponseDto<string>.Fail(ErrorCode.UserNotFound, "User is either not registered or is deleted");
 
@@ -74,7 +76,7 @@ namespace Application.Services
                 return ResponseDto<string>.Fail(ErrorCode.UserNotFound, "wrong credentials");
 
             var rolesQurable =await userRoleRepository.GetAll(x=>x.UserId==user.Id);
-            var roles = rolesQurable.Select(x=>x.Role.Name).ToList();
+            var roles = await rolesQurable.Select(x=>x.Role.Name).ToListAsync();
 
             var token = new GenerateToken(jwtSettings).GenerateJwtToken(user.Id.ToString(), user.Email, roles);
 
@@ -84,7 +86,7 @@ namespace Application.Services
         public async Task<ResponseDto<string>> ForgetPassword(string email)
         {
             var userQurable = await userRepository.GetAll(x => x.Email ==email);
-            var user = userQurable.FirstOrDefault();
+            var user =await userQurable.FirstOrDefaultAsync();
 
             if (user==null)
                 return ResponseDto<string>.Fail(ErrorCode.EmailNotRegistered, "This email is not registered");
@@ -105,7 +107,7 @@ namespace Application.Services
         public async Task<ResponseDto<bool>> ResetPassword(ResetPasswordDto dto)
         {
             var userOtpQuerable = await userotprepo.GetAll(x => x.otp == dto.otp);
-            var useropt = userOtpQuerable.FirstOrDefault();
+            var useropt =await userOtpQuerable.FirstOrDefaultAsync();
 
             if (useropt == null || useropt.ExpiresAt > DateTime.Now)
                 return ResponseDto<bool>.Fail(ErrorCode.InvalidOtp, "otp is either Invalid or expired");
