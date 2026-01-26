@@ -44,7 +44,6 @@ namespace Presentation.Extensions
             // AutoMapper - scans assembly for all Profile classes
             services.AddAutoMapper(typeof(Profile).Assembly);
 
-
         }
     }
 }

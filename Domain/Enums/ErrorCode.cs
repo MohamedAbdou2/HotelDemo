@@ -3,7 +3,7 @@
     public enum ErrorCode
     {
         BadRequest,
-        ValidationError
+        ValidationError,
         //User 
         EmailalreadyExist = 101,
         EmailNotRegistered = 102,
