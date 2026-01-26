@@ -1,6 +1,7 @@
 using HotelDemo.Helper;
 using HotelDemo.Persistence;
 using HotelDemo.ValidationFilters;
+using Infrastructure.DataSeeding;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -40,6 +41,7 @@ builder.Services.AddAuthentication(opt => opt.DefaultAuthenticateScheme = JwtBea
     });
 var app = builder.Build();
 
+await DataSeeder.SeedData(app.Services);
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {

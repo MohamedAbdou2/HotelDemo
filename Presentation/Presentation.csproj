@@ -25,4 +25,9 @@
     <ProjectReference Include="..\Infrastructure\Infrastructure.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="MappingProfiles\" />
+    <Folder Include="Validations\" />
+  </ItemGroup>
+
 </Project>
