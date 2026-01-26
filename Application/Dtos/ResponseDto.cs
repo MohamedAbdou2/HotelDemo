@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿
 using Domain.Enums;
+using FluentValidation.Results;
 
 namespace Application.Dtos
 {
@@ -17,7 +14,7 @@ namespace Application.Dtos
 
         public ErrorCode? ErrorCode { get; set; }
 
-        public ResponseDto<T> Success(T data, string message = null)
+        public static ResponseDto<T> Success(T data, string message = null)
         {
             return new ResponseDto<T>
             {
@@ -29,7 +26,7 @@ namespace Application.Dtos
 
         }
 
-        public ResponseDto<T> Fail(ErrorCode? errorcode, string message)
+        public static ResponseDto<T>  Fail(ErrorCode? errorcode, string message)
         {
             return new ResponseDto<T>
             {
@@ -39,5 +36,16 @@ namespace Application.Dtos
                 ErrorCode = errorcode
             };
         }
+        public static ResponseDto<T> ValidaitonFial(ValidationResult validationResult)
+        {
+            var errorMessage = string.Join("; ",
+                validationResult.Errors.Select(e => $"{e.PropertyName}: {e.ErrorMessage}"));
+
+            return Fail(
+                Domain.Enums.ErrorCode.ValidationError, "Validation Failed: " +
+                "\n" +
+                errorMessage);
+        }
+
     }
 }
