@@ -15,7 +15,7 @@ namespace Application.Helper
 {
     public class MailSender
     {
-        public async Task SendAsync(
+        public async static Task SendAsync(
          string to,
          string subject,
          string body)
