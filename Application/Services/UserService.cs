@@ -28,13 +28,15 @@ namespace Application.Services
         private readonly IGenericRepository<UserOtp> userotprepo;
         private readonly IReadOnlyRepository<Role> roleRepository;
         private readonly IGenericRepository<UserRole> userRoleRepository;
+        private readonly IGenericRepository<Customer> customerRepository;
 
         public UserService(IGenericRepository<User> userRepository, 
             IMapper mapper, 
             JwtSettings jwtSettings,
             IGenericRepository<UserOtp> userOtpRepo,
             IReadOnlyRepository<Role> roleRepository, 
-            IGenericRepository<UserRole> userRoleRepository)
+            IGenericRepository<UserRole> userRoleRepository,
+            IGenericRepository<Customer> customerRepository)
         {
             this.userRepository = userRepository;
             this.mapper = mapper;
@@ -42,6 +44,7 @@ namespace Application.Services
             this.userotprepo = userOtpRepo;
             this.roleRepository = roleRepository;
             this.userRoleRepository = userRoleRepository;
+            this.customerRepository = customerRepository;
         }
         public async Task<ResponseDto<bool>> Register(RegisterDto dto)
         {
@@ -62,7 +65,10 @@ namespace Application.Services
             };
             
            result =   await userRoleRepository.Add(userRole);
-
+            var customer = new Customer
+            {
+                UserId = user.Id,
+            };
             return ResponseDto<bool>.Success(result, "Registration successfull");
         }
         public async Task<ResponseDto<string>> Login(LoginDto dto)
