@@ -85,7 +85,7 @@ namespace Infrastructure.Repositories
 
         public async Task<bool> IsExist(Expression<Func<T,bool>> creiteria)
         {
-           var result =  await context.Set<T>().AnyAsync(creiteria);
+           var result =  await context.Set<T>().Where(x=>!x.IsDeleted).AnyAsync(creiteria);
             return result;
         }
         public async Task<bool> Delete(Guid Id)
