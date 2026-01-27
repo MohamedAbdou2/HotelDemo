@@ -97,7 +97,7 @@ namespace Application.Services
 
 
 
-        public async Task<PaginatedResponseDto<IEnumerable<GetRoomResponseDto>>> GetRoomsByFilter(RoomFilterRequestDto filterDto)
+        public async Task<ResponseDto<PaginatedListResponseDto<IEnumerable<GetRoomResponseDto>>>> GetRoomsByFilter(RoomFilterRequestDto filterDto)
         {
             var query = await _roomRepository.GetAll(r =>
                 (!filterDto.RoomTypeId.HasValue || r.RoomTypeId == filterDto.RoomTypeId) &&
@@ -105,24 +105,14 @@ namespace Application.Services
                 (!filterDto.MaxPrice.HasValue || r.PricePerNight <= filterDto.MaxPrice) &&
                 (!filterDto.IsAvailable.HasValue || r.IsAvailable == filterDto.IsAvailable)
             );
-            var rooms = query.ProjectTo<GetRoomResponseDto>(_mapper.ConfigurationProvider).ToList();
-            var totalCount = rooms.Count;
-            var pagedRooms = rooms
-                .Skip((filterDto.PageNumber - 1) * filterDto.PageSize)
-                .Take(filterDto.PageSize)
-                .ToList();
-            var totalPages = (int)Math.Ceiling(totalCount / (double)filterDto.PageSize);
-            var response = new PaginatedResponseDto<IEnumerable<GetRoomResponseDto>>
-            {
-                Data = pagedRooms,
-                PageNumber = filterDto.PageNumber,
-                PageSize = filterDto.PageSize,
-                Count = totalCount,
-                TotalPages = totalPages
-            };
-
+            var projectedQuery = query.ProjectTo<GetRoomResponseDto>(_mapper.ConfigurationProvider);
+            var paginatedRooms = await PaginatedListResponseDto<IEnumerable<GetRoomResponseDto>>.CreateAsync(
+                (IQueryable<IEnumerable<GetRoomResponseDto>>)projectedQuery,
+                filterDto.PageNumber,
+                filterDto.PageSize
+            );
+            var response = ResponseDto<PaginatedListResponseDto<IEnumerable<GetRoomResponseDto>>>.Success(paginatedRooms);
             return response;
-
 
         }
     }
