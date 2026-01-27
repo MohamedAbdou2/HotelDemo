@@ -33,7 +33,7 @@ namespace HotelDemo.Helper
 
                 issuer: jwtSettings.Issuer,
                 audience: jwtSettings.Audience,
-                expires: DateTime.Now.AddDays(jwtSettings.Duration),
+                expires: DateTime.Now.AddMinutes(jwtSettings.DurationInMinutes),
                 claims: Claims,
                 signingCredentials: new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256)
 

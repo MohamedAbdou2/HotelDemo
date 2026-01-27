@@ -3,6 +3,7 @@ using Application.Interfaces;
 using FluentValidation;
 using HotelDemo.Helper;
 using HotelDemo.Persistence;
+using Infrastructure;
 using Infrastructure.DataSeeding;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -26,6 +27,8 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 builder.Services.AddHttpContextAccessor();
 
+builder.Services.AddInfrastructure();
+
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 builder.Services.AddApplication();
 
@@ -42,7 +45,12 @@ builder.Services.AddAuthentication(opt => opt.DefaultAuthenticateScheme = JwtBea
     .AddJwtBearer(
     opt =>
     {
-        var jwtsettings = builder.Configuration.GetSection("Jwt").Get<JwtSettings>();
+        var jwtsettings = builder.Configuration.GetSection("Jwt").Get<JwtSettings>()
+            ?? throw new InvalidOperationException("JWT configuration section 'Jwt' not found or invalid.");
+        
+        if (string.IsNullOrEmpty(jwtsettings.Key))
+            throw new InvalidOperationException("JWT Key is not configured.");
+        
         var key = Encoding.UTF8.GetBytes(jwtsettings.Key);
         opt.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
         {

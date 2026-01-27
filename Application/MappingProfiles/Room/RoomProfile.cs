@@ -9,13 +9,13 @@ using System.Threading.Tasks;
 
 namespace Application.MappingProfiles.Room
 {
-    internal class RoomProfile : Profile
+    public class RoomProfile : Profile
     {
         public RoomProfile()
         {
             CreateMap<Domain.Models.Room, Dtos.Room.GetRoomResponseDto>()
-                .ForMember(dest => dest.Type, opt => opt.MapFrom(src => src.Type.Name))
-                .ForMember(dest => dest.RoomPictures, opt => opt.MapFrom(src => src.RoomPictures.Select(rp => rp.PictureUrl)));
+                .ForMember(dest => dest.Type, opt => opt.MapFrom(src => src.Type != null ? src.Type.Name : string.Empty))
+                .ForMember(dest => dest.RoomPictures, opt => opt.MapFrom(src => src.RoomPictures != null ? src.RoomPictures.Select(rp => rp.PictureUrl) : Enumerable.Empty<string>()));
 
 
             CreateMap<CreateRoomRequestDto, Domain.Models.Room>()
