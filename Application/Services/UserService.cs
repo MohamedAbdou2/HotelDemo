@@ -69,6 +69,7 @@ namespace Application.Services
             {
                 UserId = user.Id,
             };
+            result = await customerRepository.Add(customer);
             return ResponseDto<bool>.Success(result, "Registration successfull");
         }
         public async Task<ResponseDto<string>> Login(LoginDto dto)
