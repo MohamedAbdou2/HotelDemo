@@ -30,6 +30,11 @@ namespace HotelDemo.Persistence.Infrastructure.EntitiesConfigurations
                    .IsRequired()
                    .HasMaxLength(500);
 
+            builder.Property(u => u.PhoneNumber)
+                   .IsRequired()
+                   .HasMaxLength(15)
+                   .IsUnicode(false);
+
             builder.Property(x => x.FirstName)
                    .IsRequired()
                    .HasMaxLength(100);
