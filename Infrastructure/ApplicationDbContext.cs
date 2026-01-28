@@ -1,4 +1,5 @@
-﻿using Domain.Models;
+﻿using Application.Helper;
+using Domain.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
@@ -9,10 +10,12 @@ namespace HotelDemo.Persistence
     public class ApplicationDbContext : DbContext
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly CurrentUser currentUser;
 
-        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options,IHttpContextAccessor httpContextAccessor) : base(options)
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options,
+            CurrentUser currentUser) : base(options)
         {
-            _httpContextAccessor = httpContextAccessor;
+            this.currentUser = currentUser;
         }
         public DbSet<User> Users { get; set; }
         public DbSet<Role> Roles { get; set; }
@@ -58,12 +61,7 @@ namespace HotelDemo.Persistence
             var entries = ChangeTracker.Entries<BaseModel>();
             foreach (var entityEntry in entries)
             {
-                var currentUserIdString = _httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                Guid? currentUserId = null;
-                if (Guid.TryParse(currentUserIdString, out var parsedGuid))
-                {
-                    currentUserId = parsedGuid;
-                }
+                Guid? currentUserId = currentUser.GetUserId();
 
                 if (entityEntry.State == EntityState.Added)
                 {

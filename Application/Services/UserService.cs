@@ -84,9 +84,9 @@ namespace Application.Services
             {
                 UserId = user.Id,
             };
-           await customerRepository.Add(customer);   
+          result = await customerRepository.Add(customer);   
 
-           return ResponseDto<bool>.Success(true);
+           return  ResponseDto<bool>.Success(result,"Registration Successfull");
         }
         public async Task<ResponseDto<string>> Login(LoginDto dto)
         {
@@ -153,9 +153,9 @@ namespace Application.Services
                 IsDeleted = true,
             };
 
-            await userRepository.UpdateIncludeAsync(user, nameof(User.IsDeleted));
+           var result = await userRepository.UpdateIncludeAsync(user, nameof(User.IsDeleted));
 
-            return ResponseDto<bool>.Success(true, "Password reset successfull");
+            return ResponseDto<bool>.Success(result, "Password reset successfull");
         }
 
         private async Task<bool> CheckByEmail(string email)
