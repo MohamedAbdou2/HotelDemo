@@ -24,7 +24,7 @@ namespace HotelDemo.Persistence.Infrastructure.EntitiesConfigurations
             builder.Property(x => x.Description)
                    .HasMaxLength(500);
 
-            builder.Property(x=>x.IsAvailable)
+            builder.Property(x => x.IsAvailable)
                    .HasDefaultValue(true);
 
             builder.HasMany(r => r.RoomFacilities)

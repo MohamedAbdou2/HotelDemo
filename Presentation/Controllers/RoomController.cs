@@ -1,9 +1,7 @@
-﻿using Application.Dtos;
-using Application.Dtos.Room;
+﻿using Application.Dtos.Room;
 using Application.Interfaces;
 using AutoMapper;
 using HotelDemo.ViewModels;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Presentation.ViewModels.Room;
 
@@ -15,7 +13,7 @@ namespace Presentation.Controllers
     {
         private readonly IRoomService _roomService;
         private readonly IMapper _mapper;
-        public RoomController(IRoomService roomService,IMapper mapper)
+        public RoomController(IRoomService roomService, IMapper mapper)
         {
             _roomService = roomService;
             _mapper = mapper;

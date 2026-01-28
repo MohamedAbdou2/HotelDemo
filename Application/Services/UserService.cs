@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Application.Dtos;
+﻿using Application.Dtos;
 using Application.Dtos.User;
 using Application.Helper;
 using Application.Interfaces;
@@ -11,13 +6,10 @@ using AutoMapper;
 using Domain.Enums;
 using Domain.Models;
 using Domain.Repositories;
-using HotelDemo.Helper;
-using BCrypt.Net;
-using System.Security.Cryptography;
-using System.Numerics;
-using Microsoft.EntityFrameworkCore;
 using FluentValidation;
-using Org.BouncyCastle.Bcpg.OpenPgp;
+using HotelDemo.Helper;
+using Microsoft.EntityFrameworkCore;
+using System.Security.Cryptography;
 
 
 namespace Application.Services
@@ -35,11 +27,11 @@ namespace Application.Services
         private readonly IValidator<LoginDto> loginDtoValidator;
         private readonly IValidator<ResetPasswordDto> resetPasswordDtoValidator;
 
-        public UserService(IGenericRepository<User> userRepository, 
-            IMapper mapper, 
+        public UserService(IGenericRepository<User> userRepository,
+            IMapper mapper,
             JwtSettings jwtSettings,
             IGenericRepository<UserOtp> userOtpRepo,
-            IReadOnlyRepository<Role> roleRepository, 
+            IReadOnlyRepository<Role> roleRepository,
             IGenericRepository<UserRole> userRoleRepository,
             IGenericRepository<Customer> customerRepository,
             IValidator<RegisterDto> registerDtoValidator,
@@ -57,7 +49,7 @@ namespace Application.Services
             this.loginDtoValidator = loginDtoValidator;
             this.resetPasswordDtoValidator = resetPasswordDtoValidator;
         }
-  
+
         public async Task<ResponseDto<bool>> Register(RegisterDto dto)
         {
             var validator = registerDtoValidator.Validate(dto);
@@ -65,12 +57,12 @@ namespace Application.Services
                 return ResponseDto<bool>.ValidaitonFail(validator);
 
             if (await CheckByEmail(dto.email))
-               return ResponseDto<bool>.Fail(ErrorCode.EmailNotRegistered, "This email is already registered");
+                return ResponseDto<bool>.Fail(ErrorCode.EmailNotRegistered, "This email is already registered");
 
             var user = mapper.Map<User>(dto);
             var result = await userRepository.Add(user);
 
-           var customerRoleQuerable =await roleRepository.GetAll(x => x.Name == "Customer");
+            var customerRoleQuerable = await roleRepository.GetAll(x => x.Name == "Customer");
             var customerRole = await customerRoleQuerable.FirstOrDefaultAsync();
 
             var userRole = new UserRole
@@ -78,8 +70,8 @@ namespace Application.Services
                 UserId = user.Id,
                 RoleId = customerRole.Id,
             };
-            
-           result =   await userRoleRepository.Add(userRole);
+
+            result = await userRoleRepository.Add(userRole);
             var customer = new Customer
             {
                 UserId = user.Id,
@@ -94,14 +86,14 @@ namespace Application.Services
                 return ResponseDto<string>.ValidaitonFail(validator);
 
             var user = await GetUserbyEmail(dto.Email);
-            if (user==null)
+            if (user == null)
                 return ResponseDto<string>.Fail(ErrorCode.UserNotFound, "User is either not registered or is deleted");
 
             if (dto.Email != user.Email && BCrypt.Net.BCrypt.HashPassword(dto.Password) != user.PasswordHash)
                 return ResponseDto<string>.Fail(ErrorCode.UserNotFound, "wrong credentials");
 
-            var rolesQurable =await userRoleRepository.GetAll(x=>x.UserId==user.Id);
-            var roles = await rolesQurable.Select(x=>x.Role.Name).ToListAsync();
+            var rolesQurable = await userRoleRepository.GetAll(x => x.UserId == user.Id);
+            var roles = await rolesQurable.Select(x => x.Role.Name).ToListAsync();
 
             var token = new GenerateToken(jwtSettings).GenerateJwtToken(user.Id.ToString(), user.Email, roles);
 
@@ -109,10 +101,10 @@ namespace Application.Services
         }
 
         public async Task<ResponseDto<string>> ForgetPassword(string email)
-        {   
+        {
 
             var user = await GetUserbyEmail(email);
-            if (user==null)
+            if (user == null)
                 return ResponseDto<string>.Fail(ErrorCode.EmailNotRegistered, "This user is either not registered or deleted");
 
             var otp = new UserOtp()
@@ -122,7 +114,7 @@ namespace Application.Services
                 ExpiresAt = DateTime.Now.AddMinutes(5)
 
             };
-            await  MailSender.SendAsync(email, "Password Reset", $"{otp.otp}");
+            await MailSender.SendAsync(email, "Password Reset", $"{otp.otp}");
 
             return ResponseDto<string>.Success("Check your email");
 
@@ -135,8 +127,8 @@ namespace Application.Services
                 return ResponseDto<bool>.ValidaitonFail(validator);
 
             var usetOtp = await ValidateOtp(dto.otp);
-            if (usetOtp==null)
-             return ResponseDto<bool>.Fail(ErrorCode.InvalidOtp, "otp is either Invalid or expired");
+            if (usetOtp == null)
+                return ResponseDto<bool>.Fail(ErrorCode.InvalidOtp, "otp is either Invalid or expired");
 
             var user = new User
             {
@@ -148,7 +140,7 @@ namespace Application.Services
 
             var otp = new UserOtp
             {
-                Id= usetOtp.Id,
+                Id = usetOtp.Id,
                 IsDeleted = true,
             };
 
@@ -172,11 +164,11 @@ namespace Application.Services
             return user;
         }
 
-        private async Task<UserOtp> ValidateOtp(string otp  )
+        private async Task<UserOtp> ValidateOtp(string otp)
         {
-            
-            var userOtpQuerable = await userotprepo.GetAll(x => x.otp ==otp);
-            var userOtp =await userOtpQuerable.FirstOrDefaultAsync();
+
+            var userOtpQuerable = await userotprepo.GetAll(x => x.otp == otp);
+            var userOtp = await userOtpQuerable.FirstOrDefaultAsync();
 
             if (userOtp == null || userOtp.ExpiresAt > DateTime.Now)
                 return null;

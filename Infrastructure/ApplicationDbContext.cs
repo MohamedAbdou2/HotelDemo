@@ -1,7 +1,6 @@
 ﻿using Domain.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using System.Reflection;
 using System.Security.Claims;
 
 namespace HotelDemo.Persistence
@@ -10,7 +9,7 @@ namespace HotelDemo.Persistence
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options,IHttpContextAccessor httpContextAccessor) : base(options)
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options, IHttpContextAccessor httpContextAccessor) : base(options)
         {
             _httpContextAccessor = httpContextAccessor;
         }

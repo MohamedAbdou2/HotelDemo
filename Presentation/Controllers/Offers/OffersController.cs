@@ -1,7 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using Application.Dtos;
-using Application.Dtos.Offers;
+﻿using Application.Dtos.Offers;
 using Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -19,7 +16,7 @@ namespace Presentation.Controllers.Offers
         {
             _offerService = offerService;
         }
-        
+
         // POST: api/offers
         [HttpPost]
         [Authorize(Roles = "Staff,Admin")]

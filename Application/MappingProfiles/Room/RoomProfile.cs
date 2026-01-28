@@ -1,11 +1,6 @@
 ﻿using Application.Dtos.Room;
 using AutoMapper;
 using Domain.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Application.MappingProfiles.Room
 {
@@ -27,7 +22,7 @@ namespace Application.MappingProfiles.Room
                         PictureUrl = url
                     })));
 
-            CreateMap<UpdateRoomRequestDto,Domain.Models.Room>()
+            CreateMap<UpdateRoomRequestDto, Domain.Models.Room>()
                 .ForMember(dest => dest.RoomTypeId, opt => opt.MapFrom(src => (Domain.Enums.RoomTypeCode)src.RoomTypeId))
                 .ForMember(dest => dest.RoomPictures, opt =>
                 opt.MapFrom(src => src.RoomPictures.Select(url =>
