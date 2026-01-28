@@ -1,4 +1,5 @@
-﻿using Application.Validator;
+﻿using Application.Helper;
+using Application.Validator;
 using AutoMapper;
 using FluentValidation;
 using FluentValidation.AspNetCore;
@@ -30,6 +31,7 @@ namespace Presentation.Extensions
             {
                 options.SuppressModelStateInvalidFilter = true;
             });
+
 
 
             var connectionString = configuration.GetConnectionString("DefaultConnection") ??
@@ -69,7 +71,7 @@ namespace Presentation.Extensions
             });
             // AutoMapper - scans assembly for all Profile classes
             services.AddAutoMapper(typeof(Profile).Assembly);
-
+            services.AddScoped<CurrentUser>();
         }
     }
 }
