@@ -10,7 +10,8 @@ namespace Domain.Repositories
 {
     public interface IReadOnlyRepository<T> where T : class
     {
-        public Task<IQueryable<T>> GetAll(Expression<Func<T,bool>> creiteria); 
+        public Task<IQueryable<T>> GetAll(Expression<Func<T,bool>> creiteria);
+       
 
     }
 }
