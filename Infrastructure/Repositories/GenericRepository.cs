@@ -13,7 +13,7 @@ using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Infrastructure.Repositories
 {
-    public class GenericRepository<T> : IGenericRepository<T> where T : BaseModel
+    public class GenericRepository<T> : IGenericRepository<T>  where T : BaseModel
     {
         private readonly ApplicationDbContext context;
 
@@ -21,6 +21,11 @@ namespace Infrastructure.Repositories
         {
             this.context = context;
         }
+        public GenericRepository()
+        {
+        }
+
+
         public async Task<bool> Add(T entity)
         {
             await context.Set<T>().AddAsync(entity);
@@ -34,9 +39,7 @@ namespace Infrastructure.Repositories
 
             if (creiteria != null)
             {
-
                 query = query.Where(creiteria);
-
             }
 
             return query;
@@ -44,10 +47,10 @@ namespace Infrastructure.Repositories
 
         public async Task<IQueryable<T>> GetbyId(Guid Id)
         {
-
             var query = context.Set<T>().AsQueryable();
 
             query = query.Where(x => !x.IsDeleted && x.Id == Id);
+
 
             return query;
         }
@@ -85,16 +88,21 @@ namespace Infrastructure.Repositories
 
         public async Task<bool> IsExist(Expression<Func<T,bool>> creiteria)
         {
-           var result =  await context.Set<T>().AnyAsync(creiteria);
+           var result =  await context.Set<T>().Where(x=>!x.IsDeleted).AnyAsync(creiteria);
             return result;
         }
         public async Task<bool> Delete(Guid Id)
         {
-            var entityqurable = await GetbyId(Id);
-            var entity = await entityqurable.FirstOrDefaultAsync();
-             context.Remove(entity);
-           var result = await context.SaveChangesAsync();
-            return result > 0;
+            // make it to remove 
+            var entity = this.GetbyId(Id).Result.FirstOrDefault();
+            var result = false;
+            if (entity != null)
+            {
+                entity.IsDeleted = true;
+                result = await this.UpdateIncludeAsync(entity, nameof(entity.IsDeleted));
+            }
+            return result;
+
         }
     }
 }

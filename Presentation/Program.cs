@@ -1,36 +1,29 @@
-using Application;
-using Application.Interfaces;
-using FluentValidation;
 using HotelDemo.Helper;
 using HotelDemo.Persistence;
+using HotelDemo.ValidationFilters;
 using Infrastructure;
 using Infrastructure.DataSeeding;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using Presentation.Extensions;
 using System.Text;
+using System.Text.Json.Serialization;
+using Application.Interfaces;
+using Application.Services.OfferServices;
+using Domain.Repositories;
+using Infrastructure.Repositories;
+using AutoMapper;
+using Application.MappingProfiles.Offer;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+builder.Services.AddApplicationServices(builder.Configuration);
 
-builder.Services.AddControllers();
-        
-
-
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ??
-    throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
-
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(connectionString));
-
-builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddInfrastructure();
-
-builder.Services.AddValidatorsFromAssemblyContaining<Program>();
-builder.Services.AddApplication();
 
 
 
@@ -39,32 +32,6 @@ builder.Services.AddApplication();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"));
-
-builder.Services.AddAuthentication(opt => opt.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(
-    opt =>
-    {
-        var jwtsettings = builder.Configuration.GetSection("Jwt").Get<JwtSettings>()
-            ?? throw new InvalidOperationException("JWT configuration section 'Jwt' not found or invalid.");
-        
-        if (string.IsNullOrEmpty(jwtsettings.Key))
-            throw new InvalidOperationException("JWT Key is not configured.");
-        
-        var key = Encoding.UTF8.GetBytes(jwtsettings.Key);
-        opt.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
-        {
-
-            ValidIssuer = jwtsettings.Issuer,
-            ValidAudience = jwtsettings.Audience,
-            IssuerSigningKey = new SymmetricSecurityKey(key),
-            ValidateIssuerSigningKey = true,
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-        };
-
-    });
 var app = builder.Build();
 
 await DataSeeder.SeedData(app.Services);

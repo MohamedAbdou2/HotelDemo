@@ -2,6 +2,8 @@
 {
     public enum ErrorCode
     {
+        BadRequest,
+        ValidationError,
         //User 
         EmailalreadyExist = 101,
         EmailNotRegistered = 102,
@@ -13,5 +15,8 @@
         RoomUpdateFailed = 203,
         RoomDeletionFailed = 204,
 
+        InvalidOtp = 104,
+        ServerError = 105,
+        NotFound = 106
     }
 }
