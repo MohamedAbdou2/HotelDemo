@@ -19,7 +19,7 @@ namespace Application.Validator
 
             RuleFor(x => x.phoneNumber)
                 .NotEmpty().
-                WithMessage("Phone number is required.")
+                 WithMessage("Phone number is required.")
                 .Matches(@"^\d{10,15}$") 
                 .WithMessage("Phone number must be between 10 and 15 digits.");
 
