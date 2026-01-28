@@ -15,7 +15,6 @@
         RoomUpdateFailed = 203,
         RoomDeletionFailed = 204,
 
-        InvalidOtp = 104,
         ServerError = 105,
         NotFound = 106
     }
