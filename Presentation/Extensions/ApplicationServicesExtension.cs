@@ -1,10 +1,14 @@
-﻿using Application.Validator;
+﻿using Application.Interfaces;
+using Application.Services.OfferServices;
+using Application.Validator;
 using AutoMapper;
+using Domain.Repositories;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using HotelDemo.Helper;
 using HotelDemo.Persistence;
 using HotelDemo.ValidationFilters;
+using Infrastructure.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -67,6 +71,9 @@ namespace Presentation.Extensions
                 };
 
             });
+            services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+            services.AddScoped<IOffers, OfferService>();
+            //services.AddScoped<IOfferRepository, OfferRepository>();
             // AutoMapper - scans assembly for all Profile classes
             services.AddAutoMapper(typeof(Profile).Assembly);
 

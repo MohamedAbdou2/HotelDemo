@@ -8,6 +8,8 @@
         EmailalreadyExist = 101,
         EmailNotRegistered = 102,
         UserNotFound = 103,
-        InvalidOtp = 104
+        InvalidOtp = 104,
+        ServerError = 105,
+        NotFound = 106
     }
 }
