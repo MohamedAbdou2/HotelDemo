@@ -10,6 +10,7 @@
         UserNotFound = 103,
         InvalidOtp = 104,
         RoleNotFound = 105,
-        UserRoleNotFound = 106
+        UserRoleNotFound = 106,
+        InvalidCurrentPassword = 107
     }
 }

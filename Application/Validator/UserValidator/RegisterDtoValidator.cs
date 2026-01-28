@@ -5,16 +5,27 @@ using System.Text;
 using System.Threading.Tasks;
 using Application.Dtos.User;
 using FluentValidation;
-
-namespace Application.Validator
+using System.Text.RegularExpressions;
+namespace Application.Validator.UserValidator
 {
-    public class ResetPasswordDtoValidator : AbstractValidator<ResetPasswordDto>
+    public class RegisterDtoValidator : AbstractValidator<RegisterDto>
     {
-        public ResetPasswordDtoValidator()
+        public RegisterDtoValidator()
         {
-            RuleFor(x => x.otp)
-                .NotEmpty().WithMessage("OTP is required.")
-                .Matches(@"^\d{6}$").WithMessage("OTP must be exactly 6 digits.");
+            RuleFor(x => x.userName)
+                .NotEmpty().WithMessage("Username is required.")
+                .MinimumLength(3).WithMessage("Username must be at least 3 characters.")
+                .MaximumLength(50).WithMessage("Username cannot exceed 50 characters.");
+
+            RuleFor(x => x.phoneNumber)
+                .NotEmpty().
+                WithMessage("Phone number is required.")
+                .Matches(@"^\d{10,15}$") 
+                .WithMessage("Phone number must be between 10 and 15 digits.");
+
+            RuleFor(x => x.email)
+                .NotEmpty().WithMessage("Email is required.")
+                .EmailAddress().WithMessage("Email must be valid.");
 
             RuleFor(x => x.password)
                 .NotEmpty().WithMessage("Password is required.")
