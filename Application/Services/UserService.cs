@@ -35,11 +35,9 @@ namespace Application.Services
         private readonly IGenericRepository<Staff> staffRepository;
         private readonly IReadOnlyRepository<Role> roleRepository;
         private readonly IGenericRepository<UserRole> userRoleRepository;
+        private readonly IGenericRepository<Customer> customerRepository;
         private readonly IValidator<StaffRegisterDto> _staffRegisterDtoValidator;
         private readonly IValidator<UpdateRoleDto> _updateRoleDtoValidator;
-        public UserService(IGenericRepository<User> userRepository,
-            IMapper mapper,
-        private readonly IGenericRepository<Customer> customerRepository;
         private readonly IValidator<RegisterDto> registerDtoValidator;
         private readonly IValidator<LoginDto> loginDtoValidator;
         private readonly IValidator<ResetPasswordDto> resetPasswordDtoValidator;
@@ -52,9 +50,7 @@ namespace Application.Services
             IReadOnlyRepository<Role> roleRepository,
             IGenericRepository<UserRole> userRoleRepository,
             IValidator<StaffRegisterDto> staffRegisterDtoValidator,
-            IValidator<UpdateRoleDto> updateRoleDtoValidator)
-            IReadOnlyRepository<Role> roleRepository, 
-            IGenericRepository<UserRole> userRoleRepository,
+            IValidator<UpdateRoleDto> updateRoleDtoValidator,
             IGenericRepository<Customer> customerRepository,
             IValidator<RegisterDto> registerDtoValidator,
             IValidator<LoginDto> loginDtoValidator,
@@ -109,7 +105,7 @@ namespace Application.Services
         {
             var validationResult = _staffRegisterDtoValidator.Validate(dto);
             if (!validationResult.IsValid)
-                return ResponseDto<bool>.ValidaitonFial(validationResult);
+                return ResponseDto<bool>.ValidaitonFail(validationResult);
 
             var isUserExist = await userRepository.IsExist(x => x.Email == dto.email);
             if (isUserExist)
@@ -240,7 +236,7 @@ namespace Application.Services
         {
             var validationResult = _updateRoleDtoValidator.Validate(dto);
             if (!validationResult.IsValid)
-                return ResponseDto<bool>.ValidaitonFial(validationResult);
+                return ResponseDto<bool>.ValidaitonFail(validationResult);
 
             if (!await IsAdmin(adminId))
                     return ResponseDto<bool>.Fail(ErrorCode.BadRequest, "Only admin can change user roles");
