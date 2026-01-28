@@ -1,23 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Application.Dtos;
+﻿using Application.Dtos;
 using Application.Dtos.User;
+using Application.Dtos.User.Staff;
 using Application.Helper;
 using Application.Interfaces;
 using AutoMapper;
+using BCrypt.Net;
 using Domain.Enums;
 using Domain.Models;
 using Domain.Repositories;
-using HotelDemo.Helper;
-using BCrypt.Net;
-using System.Security.Cryptography;
-using System.Numerics;
-using Microsoft.EntityFrameworkCore;
 using FluentValidation;
+using HotelDemo.Helper;
+using Microsoft.EntityFrameworkCore;
 using Org.BouncyCastle.Bcpg.OpenPgp;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Numerics;
+using System.Security.Cryptography;
+using System.Text;
+using System.Threading.Tasks;
 
 
 namespace Application.Services
@@ -35,17 +36,21 @@ namespace Application.Services
         private readonly IValidator<RegisterDto> registerDtoValidator;
         private readonly IValidator<LoginDto> loginDtoValidator;
         private readonly IValidator<ResetPasswordDto> resetPasswordDtoValidator;
+        private readonly IValidator<StaffRegisterDto> _staffRegisterDtoValidator;
+        private readonly IValidator<UpdateRoleDto> _updateRoleDtoValidator;
+        private readonly IValidator<ChangePasswordDto> _changePasswordDtoValidator;
 
-        public UserService(IGenericRepository<User> userRepository, 
-            IMapper mapper, 
+        public UserService(IGenericRepository<User> userRepository,
+            IMapper mapper,
             JwtSettings jwtSettings,
             IGenericRepository<UserOtp> userOtpRepo,
-            IReadOnlyRepository<Role> roleRepository, 
+            IReadOnlyRepository<Role> roleRepository,
             IGenericRepository<UserRole> userRoleRepository,
             IGenericRepository<Customer> customerRepository,
             IValidator<RegisterDto> registerDtoValidator,
             IValidator<LoginDto> loginDtoValidator,
-            IValidator<ResetPasswordDto> resetPasswordDtoValidator)
+            IValidator<ResetPasswordDto> resetPasswordDtoValidator,
+            IValidator<ChangePasswordDto> changePasswordDtoValidator)
         {
             this.userRepository = userRepository;
             this.mapper = mapper;
@@ -58,8 +63,9 @@ namespace Application.Services
             this.registerDtoValidator = registerDtoValidator;
             this.loginDtoValidator = loginDtoValidator;
             this.resetPasswordDtoValidator = resetPasswordDtoValidator;
+            _changePasswordDtoValidator = changePasswordDtoValidator;
         }
-  
+
         public async Task<ResponseDto<bool>> Register(RegisterDto dto)
         {
             var validator = registerDtoValidator.Validate(dto);
@@ -93,7 +99,7 @@ namespace Application.Services
         {
             var validationResult = _staffRegisterDtoValidator.Validate(dto);
             if (!validationResult.IsValid)
-                return ResponseDto<bool>.ValidaitonFial(validationResult);
+                return ResponseDto<bool>.ValidaitonFail(validationResult);
 
             var isUserExist = await userRepository.IsExist(x => x.Email == dto.email);
             if (isUserExist)
@@ -144,7 +150,38 @@ namespace Application.Services
 
             return ResponseDto<string>.Success(token);
         }
+        public async Task<ResponseDto<bool>> UpdateRole(UpdateRoleDto dto, Guid adminId)
+        {
+            var validationResult = _updateRoleDtoValidator.Validate(dto);
+            if (!validationResult.IsValid)
+                return ResponseDto<bool>.ValidaitonFail(validationResult);
 
+            if (!await IsAdmin(adminId))
+                return ResponseDto<bool>.Fail(ErrorCode.BadRequest, "Only admin can change user roles");
+
+         
+            if (! await userRepository.IsExist(x=>x.Id == dto.userId))
+                return ResponseDto<bool>.Fail(ErrorCode.UserNotFound, "User not found");
+
+            var roleQurable = await roleRepository.GetAll(x => x.Name == dto.roleName);
+            var role = roleQurable.FirstOrDefault();
+            if (role == null)
+                return ResponseDto<bool>.Fail(ErrorCode.RoleNotFound, "Role not found");
+
+            var userRoleQurable = await userRoleRepository.GetAll(x => x.UserId == dto.userId);
+            var userRole = userRoleQurable.FirstOrDefault();
+            if (userRole == null)
+                return ResponseDto<bool>.Fail(ErrorCode.UserRoleNotFound, "User role not found");
+
+            userRole.RoleId = role.Id;
+            var result = await userRoleRepository.UpdateIncludeAsync(userRole, nameof(UserRole.RoleId));
+            //there is a problem here 
+            // if i change role  of staff to customer the staff record will still exist in staff table, so i need to handle that case
+            // if i change role of customer to staff i need to create a new staff record
+
+            return ResponseDto<bool>.Success(true, "User role updated successfully");
+
+        }
         public async Task<ResponseDto<string>> ForgetPassword(string email)
         {   
 
@@ -180,8 +217,8 @@ namespace Application.Services
                 Id = usetOtp.UserId,
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.password)
             };
-
-            await userRepository.UpdateIncludeAsync(user, nameof(User.PasswordHash));
+            //if you choose to use string please remove the other update method and update here as well
+            await userRepository.UpdateIncludeAsync(user, x=>x.UserRoles);
 
             var otp = new UserOtp
             {
@@ -208,17 +245,53 @@ namespace Application.Services
 
             return user;
         }
-
-        private async Task<UserOtp> ValidateOtp(string otp  )
+      
+        private async Task<UserOtp> ValidateOtp(string otp)
         {
-            
-            var userOtpQuerable = await userotprepo.GetAll(x => x.otp ==otp);
-            var userOtp =await userOtpQuerable.FirstOrDefaultAsync();
+
+            var userOtpQuerable = await userotprepo.GetAll(x => x.otp == otp);
+            var userOtp = await userOtpQuerable.FirstOrDefaultAsync();
 
             if (userOtp == null || userOtp.ExpiresAt > DateTime.Now)
                 return null;
 
             return userOtp;
+        }
+
+      
+        public async Task<bool> IsAdmin(Guid userId)
+        {
+            var userRoleQurable = await userRoleRepository.GetAll(x => x.UserId == userId);
+            var userRole = userRoleQurable.FirstOrDefault();
+            if (userRole == null)
+                return false;
+            var roleQurable = await roleRepository.GetAll(x => x.Id == userRole.RoleId);
+            var role = roleQurable.FirstOrDefault();
+            if (role == null)
+                return false;
+            return role.Name == "Admin";
+        }
+
+        public async Task<ResponseDto<bool>> ChangePassword(ChangePasswordDto dto, Guid userId)
+        {
+            var validationResult = _changePasswordDtoValidator.Validate(dto);
+            if (!validationResult.IsValid)
+                return ResponseDto<bool>.ValidaitonFail(validationResult);
+
+            var userQurable = await userRepository.GetAll(x => x.Id == userId);
+            var user = userQurable.FirstOrDefault();
+            if (user == null)
+                return ResponseDto<bool>.Fail(ErrorCode.UserNotFound, "User not found");
+
+            if (!BCrypt.Net.BCrypt.Verify(dto.CurrentPassword, user.PasswordHash))
+                return ResponseDto<bool>.Fail(ErrorCode.InvalidCurrentPassword, "Current password is incorrect");
+
+            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
+            // i added new update method in generic repositopry that take property expresion to specify which property to update behind list of string property
+            // you can choose one to use and remove the other
+            //if you choose to use string please remove the other update method and update here as well
+            await userRepository.UpdateIncludeAsync(user, x => x.PasswordHash);
+            return ResponseDto<bool>.Success(true, "Password changed successfully");
         }
     }
 
