@@ -6,7 +6,8 @@ namespace Presentation.MappingProfiles.Room
 {
     public class RoomViewModelProfile : Profile
     {
-        public RoomViewModelProfile() {
+        public RoomViewModelProfile()
+        {
             CreateMap<GetRoomResponseDto, GetRoomResponseViewModel>();
             CreateMap<CreateRoomRequestViewModel, CreateRoomRequestDto>();
             CreateMap<UpdateRoomRequestViewModel, UpdateRoomRequestDto>();

@@ -1,9 +1,7 @@
 ﻿using Application;
 using Application.Interfaces;
-using Application.Services;
 using Application.Services.OfferServices;
 using Application.Validator;
-using AutoMapper;
 using Domain.Repositories;
 using FluentValidation;
 using FluentValidation.AspNetCore;
@@ -15,7 +13,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using System.Reflection;
 using System.Text;
 using System.Text.Json.Serialization;
 
@@ -75,12 +72,12 @@ namespace Presentation.Extensions
 
             });
             services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
-            services.AddScoped(typeof(IReadOnlyRepository<>),typeof(ReadOnlyRepository<>));
+            services.AddScoped(typeof(IReadOnlyRepository<>), typeof(ReadOnlyRepository<>));
 
             services.AddScoped<IOffers, OfferService>();
 
             services.AddApplication();
-             //services.AddScoped<IOfferRepository, OfferRepository>();
+            //services.AddScoped<IOfferRepository, OfferRepository>();
             // AutoMapper - scans assembly for all Profile classes
             //services.AddAutoMapper(typeof(Profile).Assembly);
 

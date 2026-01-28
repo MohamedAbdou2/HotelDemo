@@ -1,19 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
-using Domain.Models;
+﻿using Domain.Models;
 using Domain.Repositories;
 using HotelDemo.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
+using System.Linq.Expressions;
 
 namespace Infrastructure.Repositories
 {
-    public class GenericRepository<T> : IGenericRepository<T>  where T : BaseModel
+    public class GenericRepository<T> : IGenericRepository<T> where T : BaseModel
     {
         private readonly ApplicationDbContext context;
 
@@ -29,8 +23,8 @@ namespace Infrastructure.Repositories
         public async Task<bool> Add(T entity)
         {
             await context.Set<T>().AddAsync(entity);
-           var result =  await context.SaveChangesAsync();
-            return result > 0 ;
+            var result = await context.SaveChangesAsync();
+            return result > 0;
         }
 
         public async Task<IQueryable<T>> GetAll(Expression<Func<T, bool>>? creiteria = null)
@@ -86,9 +80,9 @@ namespace Infrastructure.Repositories
 
         }
 
-        public async Task<bool> IsExist(Expression<Func<T,bool>> creiteria)
+        public async Task<bool> IsExist(Expression<Func<T, bool>> creiteria)
         {
-           var result =  await context.Set<T>().Where(x=>!x.IsDeleted).AnyAsync(creiteria);
+            var result = await context.Set<T>().Where(x => !x.IsDeleted).AnyAsync(creiteria);
             return result;
         }
         public async Task<bool> Delete(Guid Id)

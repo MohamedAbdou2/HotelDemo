@@ -2,12 +2,7 @@
 using Application.Services;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Application
 {
@@ -19,7 +14,8 @@ namespace Application
 
             services.AddScoped<IRoomService, RoomService>();
 
-            services.AddAutoMapper(cfg => {
+            services.AddAutoMapper(cfg =>
+            {
             }, Assembly.GetExecutingAssembly());
             services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly);
 

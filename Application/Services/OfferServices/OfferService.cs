@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Application.Dtos;
 using Application.Dtos.Offers;
 using Application.Interfaces;
@@ -20,7 +16,7 @@ namespace Application.Services.OfferServices
         private readonly IGenericRepository<Room> roomRepository;
 
         public OfferService(IGenericRepository<Offer> repository,
-                            IMapper mapper , IGenericRepository<Room>_roomRepository)
+                            IMapper mapper, IGenericRepository<Room> _roomRepository)
         {
             _repository = repository;
             _mapper = mapper;
@@ -42,7 +38,7 @@ namespace Application.Services.OfferServices
             if (res == false)
                 return ResponseDto<string>.Fail(Domain.Enums.ErrorCode.ServerError, "Failed to create offer");
 
-            return ResponseDto<string >.Success("new", "Offer created successfully");
+            return ResponseDto<string>.Success("new", "Offer created successfully");
         }
 
         public async Task<ResponseDto<bool>> DeleteAsync(Guid id)
@@ -52,8 +48,8 @@ namespace Application.Services.OfferServices
             if (offer == null)
                 return ResponseDto<bool>.Fail(Domain.Enums.ErrorCode.NotFound, "Offer not found");
 
-            var isDeleted = await _repository.UpdateIncludeAsync(offer,nameof(Offer.IsDeleted));
-            if ( !isDeleted )
+            var isDeleted = await _repository.UpdateIncludeAsync(offer, nameof(Offer.IsDeleted));
+            if (!isDeleted)
                 return ResponseDto<bool>.Fail(Domain.Enums.ErrorCode.ServerError, "Failed to delete offer");
 
             return ResponseDto<bool>.Success(true, "Offer deleted");
@@ -61,7 +57,7 @@ namespace Application.Services.OfferServices
 
         public async Task<ResponseDto<IEnumerable<OfferDto>>> GetAllAsync(bool onlyActive = false)
         {
-            var listQuerable = await _repository.GetAll(x=>x.IsActive == onlyActive);
+            var listQuerable = await _repository.GetAll(x => x.IsActive == onlyActive);
             var offersList = await _mapper.ProjectTo<OfferDto>(listQuerable).ToListAsync();
             return ResponseDto<IEnumerable<OfferDto>>.Success(offersList);
         }
@@ -69,7 +65,7 @@ namespace Application.Services.OfferServices
         public async Task<ResponseDto<OfferDto>> GetByIdAsync(Guid id)
         {
             var offerQueryable = await _repository.GetbyId(id);
-            var offer = await offerQueryable.FirstOrDefaultAsync(); 
+            var offer = await offerQueryable.FirstOrDefaultAsync();
             if (offer == null)
                 return ResponseDto<OfferDto>.Fail(Domain.Enums.ErrorCode.NotFound, "Offer not found");
 
@@ -80,8 +76,8 @@ namespace Application.Services.OfferServices
         public async Task<ResponseDto<bool>> UpdateAsync(Guid id, UpdateOfferDto dto)
         {
             // dto.Id = id;
-            
-            if (! await _repository.IsExist(e=>e.Id == id) )
+
+            if (!await _repository.IsExist(e => e.Id == id))
                 return ResponseDto<bool>.Fail(Domain.Enums.ErrorCode.NotFound, "Offer not found");
 
             if (dto.StartDate != default && dto.EndDate != default)
@@ -89,8 +85,8 @@ namespace Application.Services.OfferServices
                 if (dto.StartDate >= dto.EndDate)
                     return ResponseDto<bool>.Fail(Domain.Enums.ErrorCode.ValidationError, "EndDate must be after StartDate");
             }
-            var start = dto.StartDate ;
-            var end = dto.EndDate ;
+            var start = dto.StartDate;
+            var end = dto.EndDate;
             if (start >= end)
                 return ResponseDto<bool>.Fail(Domain.Enums.ErrorCode.ValidationError, "EndDate must be after StartDate");
 
@@ -106,7 +102,7 @@ namespace Application.Services.OfferServices
                 .Select(p => p.Name)
                 .ToArray();
 
-            var updated = await _repository.UpdateIncludeAsync(newOffer,paramsToUpdate);
+            var updated = await _repository.UpdateIncludeAsync(newOffer, paramsToUpdate);
             if (!updated)
                 return ResponseDto<bool>.Fail(Domain.Enums.ErrorCode.ServerError, "Failed to update offer");
 

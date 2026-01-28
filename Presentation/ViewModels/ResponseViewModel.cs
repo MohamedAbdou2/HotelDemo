@@ -1,5 +1,4 @@
 ﻿using Domain.Enums;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace HotelDemo.ViewModels
 {
@@ -23,13 +22,13 @@ namespace HotelDemo.ViewModels
 
         public static ResponseViewModel<T> Success(T data, string message = null)
         {
-            return new ResponseViewModel<T>(data,true, message ?? "Success",null);
-         
+            return new ResponseViewModel<T>(data, true, message ?? "Success", null);
+
         }
 
         public static ResponseViewModel<T> Fail(ErrorCode? errorcode, string message)
         {
-            return new ResponseViewModel<T>(default, true,message,null);
+            return new ResponseViewModel<T>(default, true, message, null);
         }
     }
 }

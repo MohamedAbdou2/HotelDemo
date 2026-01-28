@@ -4,7 +4,8 @@ namespace Presentation.ViewModels.Room.RoomValidators
 {
     public class RoomFilterRequestViewModelValidator : AbstractValidator<RoomFilterRequestViewModel>
     {
-        public RoomFilterRequestViewModelValidator() {
+        public RoomFilterRequestViewModelValidator()
+        {
             RuleFor(x => x.MinPrice)
                    .GreaterThanOrEqualTo(0).WithMessage("MinPrice must be greater than or equal to 0.")
                    .LessThanOrEqualTo(x => x.MaxPrice).WithMessage("MinPrice must be less than or equal to MaxPrice.");
