@@ -14,7 +14,7 @@ namespace Application.Interfaces
         Task<ResponseDto<string>> Login(LoginDto dto);
         Task<ResponseDto<string>> ForgetPassword(string Email);
         Task<ResponseDto<bool>> ResetPassword(ResetPasswordDto dto);
-
-
+        ResponseDto<bool> UpdateRole(UpdateRoleDto dto);
+        ResponseDto<bool> UpdateRole(UpdateRoleDto dto);
     }
 }
