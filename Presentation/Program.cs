@@ -1,20 +1,17 @@
-using HotelDemo.Helper;
-using HotelDemo.Persistence;
-using HotelDemo.ValidationFilters;
+using Infrastructure;
 using Infrastructure.DataSeeding;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Data.SqlClient;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 using Presentation.Extensions;
-using System.Text;
-using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
-
 builder.Services.AddApplicationServices(builder.Configuration);
+
+
+builder.Services.AddInfrastructure();
+
+
+
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

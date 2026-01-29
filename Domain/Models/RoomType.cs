@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Domain.Models
 {
-    public class RoomType 
+    public class RoomType
     {
         [Key]
         public RoomTypeCode Id { get; set; }

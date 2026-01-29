@@ -2,7 +2,6 @@
 using Domain.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using System.Reflection;
 using System.Security.Claims;
 
 namespace HotelDemo.Persistence

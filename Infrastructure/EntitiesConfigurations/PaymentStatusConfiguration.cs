@@ -23,7 +23,7 @@ namespace HotelDemo.Persistence.Infrastructure.EntitiesConfigurations
                    .IsRequired()
                    .HasMaxLength(100);
 
-            builder.Property(x=> x.IsAvailable)
+            builder.Property(x => x.IsAvailable)
                    .IsRequired()
                    .HasDefaultValue(true);
 
