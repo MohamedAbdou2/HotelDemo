@@ -14,7 +14,7 @@ namespace Domain.Models
 
         public ReservationStatusCode ReservationStatusId { get; set; }
         public ReservationStatus ReservationStatus { get; set; } = null!;
-        
+
         public Guid? PaymentId { get; set; }
         public Payment? Payment { get; set; }
 

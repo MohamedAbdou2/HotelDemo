@@ -1,15 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Mail;
-using System.Text;
-using System.Threading.Tasks;
-using MailKit.Security;
-using MailKit.Net.Smtp;
+﻿using MailKit.Security;
 using MimeKit;
 using MimeKit.Text;
 using SmtpClient = MailKit.Net.Smtp.SmtpClient;
-using System.Security.Cryptography;
 
 namespace Application.Helper
 {

@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Application.Helper
+﻿namespace Application.Helper
 {
     public class SmtpSettings
     {
@@ -12,6 +6,6 @@ namespace Application.Helper
         public static int Port => 587;
         public static string Email => "os.taha007@gmail.com";
         public static string Password => "mdmq gqaj ykhl mmuf";
-     
+
     }
 }
