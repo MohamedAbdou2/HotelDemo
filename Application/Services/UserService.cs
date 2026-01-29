@@ -287,9 +287,7 @@ namespace Application.Services
                 return ResponseDto<bool>.Fail(ErrorCode.InvalidCurrentPassword, "Current password is incorrect");
 
             user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
-            // i added new update method in generic repositopry that take property expresion to specify which property to update behind list of string property
-            // you can choose one to use and remove the other
-            //if you choose to use string please remove the other update method and update here as well
+   
             await userRepository.UpdateIncludeAsync(user, x => x.PasswordHash);
             return ResponseDto<bool>.Success(true, "Password changed successfully");
         }
