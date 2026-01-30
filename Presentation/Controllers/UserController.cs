@@ -33,7 +33,6 @@ namespace Presentation.Controllers
                 : ResponseViewModel<bool>.Fail(resultdto.ErrorCode,resultdto.Message);
         }
 
-        [Authorize]
         [HttpPost("login")]
 
         public async Task<ResponseViewModel<string>> Login(LoginViewModel model)
@@ -43,6 +42,17 @@ namespace Presentation.Controllers
 
             return resultdto.IsSuccess ? ResponseViewModel<string>.Success(resultdto.Data ?? string.Empty, resultdto.Message)
                 : ResponseViewModel<string>.Fail(resultdto.ErrorCode, resultdto.Message);
+        }
+
+        [Authorize]
+        [HttpPut("update-user/{Id}")]
+        public async Task<ResponseViewModel<bool>> UpdateUser([FromRoute]Guid Id, [FromBody]UpdateUserViewModel model)
+        {
+            var dto = mapper.Map<UpdateUserDto>(model);
+            var resultdto = await userService.UpdateUser(Id,dto);
+
+            return resultdto.IsSuccess ? ResponseViewModel<bool>.Success(resultdto.Data, resultdto.Message)
+                : ResponseViewModel<bool>.Fail(resultdto.ErrorCode, resultdto.Message);
         }
 
         [Authorize]

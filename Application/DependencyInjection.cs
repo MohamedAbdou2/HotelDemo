@@ -1,5 +1,8 @@
-﻿using Application.Interfaces;
+﻿using Application.Dtos.User;
+using Application.Interfaces;
 using Application.Services;
+using Application.Services.OfferServices;
+using Application.Validator;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
@@ -13,6 +16,8 @@ namespace Application
 
 
             services.AddScoped<IRoomService, RoomService>();
+            services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IOffers, OfferService>();
 
             services.AddAutoMapper(cfg =>
             {

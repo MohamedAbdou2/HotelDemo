@@ -1,11 +1,19 @@
 ﻿using Application.Dtos.User;
 using FluentValidation;
-namespace Application.Validator
+namespace Application.Validator.UserValidator
 {
     public class RegisterDtoValidator : AbstractValidator<RegisterDto>
     {
         public RegisterDtoValidator()
         {
+            RuleFor(x => x.FirstName)
+           .NotEmpty().WithMessage("First name is required")
+           .MaximumLength(100).WithMessage("First name must not exceed 50 characters");
+
+            RuleFor(x => x.LastName)
+                .NotEmpty().WithMessage("Last name is required")
+                .MaximumLength(100).WithMessage("Last name must not exceed 50 characters");
+
             RuleFor(x => x.userName)
                 .NotEmpty().WithMessage("Username is required.")
                 .MinimumLength(3).WithMessage("Username must be at least 3 characters.")
@@ -14,7 +22,7 @@ namespace Application.Validator
             RuleFor(x => x.phoneNumber)
                 .NotEmpty().
                  WithMessage("Phone number is required.")
-                .Matches(@"^\d{10,15}$") 
+                .Matches(@"^\d{10,15}$")
                 .WithMessage("Phone number must be between 10 and 15 digits.");
 
             RuleFor(x => x.email)
