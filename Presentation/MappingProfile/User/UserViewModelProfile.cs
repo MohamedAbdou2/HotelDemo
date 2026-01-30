@@ -14,6 +14,9 @@ namespace Presentation.MappingProfiles.User
         public UserViewModelProfile()
         {
             CreateMap<RegisterViewModel, RegisterDto>();
+            CreateMap<LoginViewModel, LoginDto>();
+            CreateMap<ResetPasswordViewModel, ResetPasswordDto>();
+            CreateMap<UpdateUserViewModel, UpdateUserDto>();
              
         }
     }

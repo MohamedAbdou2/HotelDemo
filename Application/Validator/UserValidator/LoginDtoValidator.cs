@@ -1,17 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Application.Dtos.User;
+﻿using Application.Dtos.User;
 using FluentValidation;
-using Presentation.ViewModels.User;
 
-namespace Presentation.Validator
+namespace Application.Validator.UserValidator
 {
-    public class LoginVieModelValidator : AbstractValidator<LoginViewModel>
+    public class LoginDtoValidator : AbstractValidator<LoginDto>
     {
-        public LoginVieModelValidator()
+        public LoginDtoValidator()
         {
             RuleFor(x => x.Email)
                 .NotEmpty().WithMessage("Email is required.")

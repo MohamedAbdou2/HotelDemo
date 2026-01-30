@@ -4,6 +4,7 @@ using HotelDemo.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using System.Linq.Expressions;
+using System.Reflection;
 
 namespace Infrastructure.Repositories
 {
@@ -58,6 +59,8 @@ namespace Infrastructure.Repositories
             {
                 context.Set<T>().Attach(entity);
                 entityEntry = context.Set<T>().Entry(entity);
+                entityEntry.State = EntityState.Unchanged;
+
             }
             else
             {
