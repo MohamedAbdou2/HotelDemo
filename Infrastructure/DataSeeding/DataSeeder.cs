@@ -21,6 +21,7 @@ namespace Infrastructure.DataSeeding
                 {
                     Username = "admin",
                     FirstName = "admin",
+                    PhoneNumber ="0123456789",
                     LastName = "admin",
                     Email = "Admin@Company.com",
                     PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin@123"),
