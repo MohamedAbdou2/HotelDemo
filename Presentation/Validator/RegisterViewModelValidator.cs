@@ -8,7 +8,7 @@ using FluentValidation;
 using System.Text.RegularExpressions;
 using Presentation.ViewModels.User;
 
-namespace Presentation.Validator
+namespace Presentation.Validator.UserValidator
 {
     public class RegisterViewModelValidator : AbstractValidator<RegisterViewModel>
     {
