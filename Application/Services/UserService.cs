@@ -283,8 +283,8 @@ namespace Application.Services
             if (user == null)
                 return ResponseDto<bool>.Fail(ErrorCode.UserNotFound, "User not found");
 
-            if (!BCrypt.Net.BCrypt.Verify(dto.CurrentPassword, user.PasswordHash))
-                return ResponseDto<bool>.Fail(ErrorCode.InvalidCurrentPassword, "Current password is incorrect");
+            //if (!BCrypt.Net.BCrypt.Verify(dto.CurrentPassword, user.PasswordHash))
+            //    return ResponseDto<bool>.Fail(ErrorCode.InvalidCurrentPassword, "Current password is incorrect");
 
             user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
    
