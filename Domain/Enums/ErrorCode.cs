@@ -14,6 +14,7 @@
         ServerError = 107,
         NotFound = 108,
         FaildedToUpdateUser =109,
+        InvalidCurrentPassword = 110,
 
         //Room
         RoomNotFound = 201,
