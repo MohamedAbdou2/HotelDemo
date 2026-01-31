@@ -6,13 +6,11 @@ using System.Threading.Tasks;
 using Application.Dtos.User;
 using FluentValidation;
 using System.Text.RegularExpressions;
-using Presentation.ViewModels.User;
-
-namespace Presentation.Validator.UserValidator
+namespace Application.Validator
 {
-    public class RegisterViewModelValidator : AbstractValidator<RegisterViewModel>
+    public class RegisterDtoValidator : AbstractValidator<RegisterDto>
     {
-        public RegisterViewModelValidator()
+        public RegisterDtoValidator()
         {
             RuleFor(x => x.userName)
                 .NotEmpty().WithMessage("Username is required.")

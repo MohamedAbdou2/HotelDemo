@@ -1,6 +1,18 @@
-﻿using Application.Dtos.User;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Application.Dtos.User;
 using FluentValidation;
+using System.Text.RegularExpressions;
+<<<<<<<< HEAD:Presentation/Validator/RegisterViewModelValidator.cs
+using Presentation.ViewModels.User;
+
+namespace Presentation.Validator
+========
 namespace Application.Validator.UserValidator
+>>>>>>>> admin:Application/Validator/UserValidator/RegisterDtoValidator.cs
 {
     public class RegisterDtoValidator : AbstractValidator<RegisterDto>
     {
@@ -21,8 +33,8 @@ namespace Application.Validator.UserValidator
 
             RuleFor(x => x.phoneNumber)
                 .NotEmpty().
-                 WithMessage("Phone number is required.")
-                .Matches(@"^\d{10,15}$")
+                WithMessage("Phone number is required.")
+                .Matches(@"^\d{10,15}$") 
                 .WithMessage("Phone number must be between 10 and 15 digits.");
 
             RuleFor(x => x.email)
