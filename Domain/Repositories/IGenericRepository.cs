@@ -11,10 +11,11 @@ namespace Domain.Repositories
 
         Task<IQueryable<T>> GetbyId(Guid Id);
         Task<bool> UpdateIncludeAsync(T entity, params string[] modifiedParams);
-
-        Task<bool> IsExist(Expression<Func<T, bool>> creiteria);
+        Task<bool> UpdateIncludeAsync(T entity, params Expression<Func<T, object>>[] properties);
+        Task<bool> IsExist(Expression<Func<T,bool>> creiteria);
 
         Task<bool> Delete(Guid Id);
+        
 
     }
 }

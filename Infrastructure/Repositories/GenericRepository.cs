@@ -82,24 +82,44 @@ namespace Infrastructure.Repositories
             return result > 0;
 
         }
+        //type safe version, not usign reflection so it is faster 
+        public async Task<bool> UpdateIncludeAsync(T entity, params Expression<Func<T, object>>[] properties)
+        {
+            var local = context.Set<T>().Local.FirstOrDefault(x => x.Id == entity.Id);
+            EntityEntry<T> entityEntry;
 
-        public async Task<bool> IsExist(Expression<Func<T, bool>> creiteria)
+            if (local == null)
+            {
+                context.Set<T>().Attach(entity);
+                entityEntry = context.Entry(entity);
+            }
+            else
+            {
+                entityEntry = context.Entry(local);
+                entityEntry.CurrentValues.SetValues(entity);
+            }
+
+            foreach (var property in properties)
+            {
+                entityEntry.Property(property).IsModified = true;
+            }
+
+            var result = await context.SaveChangesAsync();
+            return result > 0;
+        }
+        public async Task<bool> IsExist(Expression<Func<T,bool>> creiteria)
         {
             var result = await context.Set<T>().Where(x => !x.IsDeleted).AnyAsync(creiteria);
             return result;
         }
         public async Task<bool> Delete(Guid Id)
         {
-            // make it to remove 
-            var entity = this.GetbyId(Id).Result.FirstOrDefault();
-            var result = false;
-            if (entity != null)
-            {
-                entity.IsDeleted = true;
-                result = await this.UpdateIncludeAsync(entity, nameof(entity.IsDeleted));
-            }
-            return result;
-
+            var entityqurable = await GetbyId(Id);
+            var entity = await entityqurable.FirstOrDefaultAsync();
+            context.Remove(entity);
+            var result = await context.SaveChangesAsync();
+            return result > 0;
         }
+    
     }
 }
