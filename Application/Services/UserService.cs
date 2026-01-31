@@ -1,36 +1,16 @@
-﻿using Application.Dtos;
+﻿using System.Security.Cryptography;
+using Application.Dtos;
 using Application.Dtos.User;
 using Application.Dtos.User.Staff;
 using Application.Helper;
 using Application.Interfaces;
 using AutoMapper;
-using BCrypt.Net;
 using Domain.Enums;
 using Domain.Models;
 using Domain.Repositories;
 using FluentValidation;
 using HotelDemo.Helper;
 using Microsoft.EntityFrameworkCore;
-using Org.BouncyCastle.Bcpg.OpenPgp;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
-
-using BCrypt.Net;
-using System.Security.Cryptography;
-using System.Numerics;
-using Application.Dtos.User.Staff;
-using FluentValidation;
-using Application.Validator.UserValidator;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore;
-using FluentValidation;
-using Org.BouncyCastle.Bcpg.OpenPgp;
-using System.Security.Cryptography;
 using Microsoft.Extensions.Options;
 
 
