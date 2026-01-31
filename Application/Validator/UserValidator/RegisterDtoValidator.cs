@@ -8,6 +8,7 @@ using FluentValidation;
 using System.Text.RegularExpressions;
 
 namespace Application.Validator.UserValidator
+>>>>>>>> admin:Application/Validator/UserValidator/RegisterDtoValidator.cs
 {
     public class RegisterDtoValidator : AbstractValidator<RegisterDto>
     {
