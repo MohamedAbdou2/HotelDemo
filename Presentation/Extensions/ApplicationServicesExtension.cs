@@ -80,7 +80,14 @@ namespace Presentation.Extensions
             //services.AddScoped<IOfferRepository, OfferRepository>();
             // AutoMapper - scans assembly for all Profile classes
             //services.AddAutoMapper(typeof(Profile).Assembly);
+        /*    services.AddHangfire(configuration => configuration
+    .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+    .UseSimpleAssemblyNameTypeSerializer()
+    .UseRecommendedSerializerSettings()
+    .UseSqlServerStorage(builder.Configuration.GetConnectionString("DefaultConnection"))); // تأكد من اسم الـ Connection String
 
+            // 2. إضافة الـ Server (المسؤول عن تنفيذ المهام في الخلفية)
+            services.AddHangfireServer();*/
         }
     }
 }

@@ -75,7 +75,7 @@ namespace Application.Services.ReservationServices
               
                     var reservation = _mapper.Map<Reservation>(dto);
                     await _reservationRepository.Add(reservation);
-
+                    
 
                     await _roomRepository.Update(room);
             
@@ -96,11 +96,24 @@ namespace Application.Services.ReservationServices
             return !await _reservationRepository
                 .IsExist(r => r.RoomId == roomId &&
                                r.ReservationStatusId != ReservationStatusCode.Cancelled &&
+                             
                                checkIn < r.CheckOutDate && 
                                checkOut > r.CheckInDate);  
         }
 
+        public async Task CheckAndCancelReservation(Guid reservationId)
+        {
+            var reservationQuery = await _reservationRepository.GetbyId(reservationId);
+            var reservation = reservationQuery.FirstOrDefault();
 
+            if (reservation != null && reservation.ReservationStatusId == ReservationStatusCode.Pending)
+            {
+                reservation.ReservationStatusId = ReservationStatusCode.Cancelled;
+
+               
+                await _reservationRepository.UpdateIncludeAsync(reservation , nameof(Reservation.ReservationStatusId));
+            }
+        }
 
 
         /*   Background Service: تعمل كل 10 دقائق(باستخدام IHostedService أو Hangfire).
