@@ -73,8 +73,11 @@ namespace Application.Services
             if (!validator.IsValid)
                 return ResponseDto<bool>.ValidaitonFail(validator);
 
-            if (await CheckByEmail(dto.email))
-                return ResponseDto<bool>.Fail(ErrorCode.EmailalreadyExist, "This email is already registered");
+            var validateResutl = await RegisterValidat(dto);
+            if (validateResutl is not null)
+            {
+                return validateResutl;
+            }
 
             var user = mapper.Map<User>(dto);
             var result = await userRepository.Add(user);
@@ -131,9 +134,11 @@ namespace Application.Services
             if (!validationResult.IsValid)
                 return ResponseDto<bool>.ValidaitonFail(validationResult);
 
-            var isUserExist = await userRepository.IsExist(x => x.Email == dto.email);
-            if (isUserExist)
-                return ResponseDto<bool>.Fail(ErrorCode.EmailalreadyExist, "A user with this eamil is already resgistered");
+            var validateResutl = await RegisterValidat(dto);
+            if (validateResutl is not null)
+            {
+                return validateResutl;
+            }
 
             var user = mapper.Map<User>(dto);
 
@@ -147,6 +152,7 @@ namespace Application.Services
                 TerminationDate = dto.TerminationDate,
             };
             result = await staffRepository.Add(staff);
+
             var staffRole = await roleRepository.GetAll(x => x.Name == "Staff");
             var staffRoleId = staffRole.FirstOrDefault()?.Id;
 
@@ -159,6 +165,24 @@ namespace Application.Services
             result = await userRoleRepository.Add(userRole);
 
             return ResponseDto<bool>.Success(result, "Registration successfull");
+        }
+
+        private async Task<ResponseDto<bool>>? RegisterValidat(RegisterDto dto ) 
+        {
+
+            var isUserExist = await userRepository.IsExist(x => x.Email == dto.email);
+            if (isUserExist)
+                return ResponseDto<bool>.Fail(ErrorCode.EmailalreadyExist, "A user with this eamil is already resgistered");
+
+            var isUserNameExist = await userRepository.IsExist(x => x.Username == dto.userName);
+            if (isUserNameExist)
+                return ResponseDto<bool>.Fail(ErrorCode.EmailalreadyExist, "A user with this User Name is already resgistered");
+
+            var isPhoneNumberExist = await userRepository.IsExist(x => x.PhoneNumber == dto.phoneNumber);
+            if (isPhoneNumberExist)
+                return ResponseDto<bool>.Fail(ErrorCode.EmailalreadyExist, "A user with this phone number is already resgistered");
+
+            return null;
         }
         public async Task<ResponseDto<string>> Login(LoginDto dto)
         {

@@ -14,7 +14,7 @@ namespace Presentation.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-   // [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin")]
     public class AdminController : ControllerBase
     {
         private readonly IUserService _userService;
@@ -35,18 +35,22 @@ namespace Presentation.Controllers
              return Ok(result);
          }
  */
-       // [Authorize/*(Roles ="admin")*/]
+      //  [Authorize/*(Roles ="admin")*/]
         [HttpPost("staff/register")]
         public async Task<ActionResult<ResponseViewModel<bool>>> RegisterStaff([FromBody]StaffRegisterViewModel model)
         {
             var userId = _currentUser.GetUserId();
+
             if (userId == Guid.Empty)
                 return ResponseViewModel<bool>.Fail(ErrorCode.UserNotFound, "Can not Find User");
+
             var dto = _mapper.Map<StaffRegisterDto>(model);
+
             var result = await _userService.StaffRegister(dto);
+
             return result.Data ? 
                 ResponseViewModel<bool>.Success(result.Data , "staff register successfully")  
-                : ResponseViewModel<bool>.Fail(ErrorCode.StaffRegisterFail , "Error Aqure When regiter staff");
+                : ResponseViewModel<bool>.Fail(result.ErrorCode, "Error Aqure When regiter staff" + "\n" +  result.Message);
         }
     }
 }
