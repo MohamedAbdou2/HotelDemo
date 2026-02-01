@@ -18,6 +18,7 @@
         ServerError = 105,
         NotFound = 106,
      
-        NotAvailableRoom = 105
+        NotAvailableRoom = 105,
+        RoomNotAvailable = 205
     }
 }

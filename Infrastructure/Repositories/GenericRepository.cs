@@ -3,6 +3,7 @@ using Domain.Repositories;
 using HotelDemo.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Polly;
 using System.Linq.Expressions;
 
 namespace Infrastructure.Repositories
@@ -97,6 +98,24 @@ namespace Infrastructure.Repositories
             }
             return result;
 
+        }
+
+        public async Task<bool> Update(T entity)
+        {
+            var dbSet = context.Set<T>();
+
+            if (context.Entry(entity).State == EntityState.Detached)
+            {
+                dbSet.Attach(entity);
+            }
+ 
+            context.Entry(entity).State = EntityState.Modified;
+            var result = await context.SaveChangesAsync();
+            if (result > 0)
+            {
+                return true;
+            }
+            return false;
         }
     }
 }
