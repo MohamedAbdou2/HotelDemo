@@ -4,6 +4,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>b9e184b2-3339-456e-af51-1a43c3101cf8</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,8 +15,13 @@
   </ItemGroup>
 
   <ItemGroup>
-	  <PackageReference Include="FluentValidation.AspNetCore" Version="11.2.2" />
+	  <PackageReference Include="FluentValidation" Version="12.1.1" />
 	  <PackageReference Include="AutoMapper" Version="13.0.1" />
+	  <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
+	  <PackageReference Include="Hangfire" Version="1.8.22" />
+	  <PackageReference Include="Hangfire.AspNetCore" Version="1.8.22" />
+	  <PackageReference Include="Hangfire.Core" Version="1.8.22" />
+	  <PackageReference Include="Hangfire.SqlServer" Version="1.8.22" />
 
 
 	  <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.23" />

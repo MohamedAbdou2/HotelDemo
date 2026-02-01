@@ -9,14 +9,20 @@
         EmailNotRegistered = 102,
         UserNotFound = 103,
         InvalidOtp = 104,
+        RoleNotFound = 105,
+        UserRoleNotFound = 106,
+        ServerError = 107,
+        NotFound = 108,
+        FaildedToUpdateUser =109,
+        InvalidCurrentPassword = 110,
+        FailedToUpdateUserRole = 111,
+
         //Room
         RoomNotFound = 201,
         RoomCreationFailed = 202,
         RoomUpdateFailed = 203,
         RoomDeletionFailed = 204,
 
-        ServerError = 105,
-        NotFound = 106,
      
         NotAvailableRoom = 105,
         RoomNotAvailable = 205
