@@ -10,7 +10,7 @@ namespace Application.Dtos.Reservation
         public DateTime CheckInDate { get; set; }
         public DateTime CheckOutDate { get; set; }
         public decimal TotalPrice { get; set; }
-        public ReservationStatusCode ReservationStatusId { get; set; }
+        public ReservationStatusCode? ReservationStatusId { get; set; } = ReservationStatusCode.Pending;
         public Guid? PaymentId { get; set; }
     }
 }

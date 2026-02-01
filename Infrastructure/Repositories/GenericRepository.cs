@@ -86,19 +86,7 @@ namespace Infrastructure.Repositories
             var result = await context.Set<T>().Where(x => !x.IsDeleted).AnyAsync(creiteria);
             return result;
         }
-        public async Task<bool> Delete(Guid Id)
-        {
-            // make it to remove 
-            var entity = this.GetbyId(Id).Result.FirstOrDefault();
-            var result = false;
-            if (entity != null)
-            {
-                entity.IsDeleted = true;
-                result = await this.UpdateIncludeAsync(entity, nameof(entity.IsDeleted));
-            }
-            return result;
-
-        }
+      
 
         public async Task<bool> Update(T entity)
         {
@@ -108,7 +96,7 @@ namespace Infrastructure.Repositories
             {
                 dbSet.Attach(entity);
             }
- 
+
             context.Entry(entity).State = EntityState.Modified;
             var result = await context.SaveChangesAsync();
             if (result > 0)
@@ -116,6 +104,36 @@ namespace Infrastructure.Repositories
                 return true;
             }
             return false;
+        }
+       
+        public async Task<T?> GetByIdAsync(Guid id)
+        {
+            return await context.Set<T>()
+                .FirstOrDefaultAsync(x => !x.IsDeleted && x.Id == id);
+        }
+
+     
+        public async Task<bool> Delete(Guid id)
+        {
+            var entity = await GetByIdAsync(id); 
+            if (entity == null) return false;
+
+            entity.IsDeleted = true;
+            return await UpdateIncludeAsync(entity, nameof(BaseModel.IsDeleted));
+        }
+
+        public async Task<bool> Update(T entity)
+        {
+            var entry = context.Entry(entity);
+            if (entry.State == EntityState.Detached)
+            {
+                context.Set<T>().Attach(entity);
+            }
+
+            entry.State = EntityState.Modified;
+
+             var result =  await context.SaveChangesAsync();
+            return result > 0;
         }
     }
 }
