@@ -28,7 +28,7 @@ namespace HotelDemo.ViewModels
 
         public static ResponseViewModel<T> Fail(ErrorCode? errorcode, string message)
         {
-            return new ResponseViewModel<T>(default, true, message, null);
+            return new ResponseViewModel<T>(default, false, message, errorcode);
         }
     }
 }
