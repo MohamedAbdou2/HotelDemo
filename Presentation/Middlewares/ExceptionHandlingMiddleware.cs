@@ -1,8 +1,6 @@
 ﻿
-using System.Net;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using static System.Net.WebRequestMethods;
+using System.Net;
 
 namespace HotelDemo.Middlewares
 {
@@ -14,7 +12,7 @@ namespace HotelDemo.Middlewares
         {
             this.logger = logger;
         }
-        public async Task InvokeAsync(HttpContext context, RequestDelegate next )
+        public async Task InvokeAsync(HttpContext context, RequestDelegate next)
         {
             try
             {

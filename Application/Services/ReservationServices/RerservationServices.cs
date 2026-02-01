@@ -6,11 +6,6 @@ using Domain.Enums;
 using Domain.Models;
 using Domain.Repositories;
 using FluentValidation;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 
 namespace Application.Services.ReservationServices
@@ -42,7 +37,7 @@ namespace Application.Services.ReservationServices
             var validationResult = _reservationValidator.Validate(reservationDto);
             if (!validationResult.IsValid)
             {
-                return ResponseDto<ReservationResponseDto>.ValidaitonFial(validationResult);
+                return ResponseDto<ReservationResponseDto>.ValidaitonFail(validationResult);
             }
             if (!await RoomAvailableAsync(reservationDto.RoomId))
             {
