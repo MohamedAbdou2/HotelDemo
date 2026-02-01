@@ -1,4 +1,6 @@
-﻿using Microsoft.IdentityModel.Tokens;
+﻿using Application.Helper;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -9,13 +11,13 @@ namespace HotelDemo.Helper
     {
         private readonly JwtSettings jwtSettings;
 
-        public GenerateToken(JwtSettings jwtSettings)
+        public GenerateToken(IOptions<JwtSettings> jwtoptions)
         {
-            this.jwtSettings = jwtSettings;
+            this.jwtSettings = jwtoptions.Value;
         }
         public string GenerateJwtToken(string userId, string email, List<string> Roles)
         {
-            var key = Encoding.UTF8.GetBytes(jwtSettings.Key);
+            var key = Encoding.ASCII.GetBytes(jwtSettings.Key);
             var creds = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256);
 
             var Claims = new List<Claim>

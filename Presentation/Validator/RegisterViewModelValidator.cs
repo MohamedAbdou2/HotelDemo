@@ -6,12 +6,22 @@ using System.Threading.Tasks;
 using Application.Dtos.User;
 using FluentValidation;
 using System.Text.RegularExpressions;
-namespace Application.Validator
+using Presentation.ViewModels.User;
+
+namespace Presentation.Validator.UserValidator
 {
-    public class RegisterDtoValidator : AbstractValidator<RegisterDto>
+    public class RegisterViewModelValidator : AbstractValidator<RegisterViewModel>
     {
-        public RegisterDtoValidator()
+        public RegisterViewModelValidator()
         {
+            RuleFor(x => x.FirstName)
+              .NotEmpty().WithMessage("First name is required")
+              .MaximumLength(100).WithMessage("First name must not exceed 50 characters");
+
+            RuleFor(x => x.LastName)
+                .NotEmpty().WithMessage("Last name is required")
+                .MaximumLength(100).WithMessage("Last name must not exceed 50 characters");
+
             RuleFor(x => x.userName)
                 .NotEmpty().WithMessage("Username is required.")
                 .MinimumLength(3).WithMessage("Username must be at least 3 characters.")

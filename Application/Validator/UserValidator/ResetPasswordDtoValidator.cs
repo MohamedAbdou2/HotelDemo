@@ -1,7 +1,7 @@
 ﻿using Application.Dtos.User;
 using FluentValidation;
 
-namespace Application.Validator
+namespace Application.Validator.UserValidator
 {
     public class ResetPasswordDtoValidator : AbstractValidator<ResetPasswordDto>
     {

@@ -2,7 +2,7 @@
 using AutoMapper;
 using Presentation.ViewModels.Room;
 
-namespace Presentation.MappingProfiles.Room
+namespace Presentation.MappingProfile.Room
 {
     public class RoomViewModelProfile : Profile
     {

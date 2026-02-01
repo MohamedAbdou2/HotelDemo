@@ -95,10 +95,10 @@ namespace Application.Services.ReservationServices
         {
             return !await _reservationRepository
                 .IsExist(r => r.RoomId == roomId &&
-                               r.ReservationStatusId != ReservationStatusCode.Cancelled &&
-                             
-                               checkIn < r.CheckOutDate && 
-                               checkOut > r.CheckInDate);  
+                              r.ReservationStatusId != ReservationStatusCode.Cancelled &&
+                              r.ReservationStatusId != ReservationStatusCode.CheckedOut &&
+                              checkIn < r.CheckOutDate &&
+                              checkOut > r.CheckInDate);
         }
 
         public async Task CheckAndCancelReservation(Guid reservationId)

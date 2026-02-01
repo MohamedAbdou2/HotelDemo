@@ -1,10 +1,9 @@
-﻿using Application;
+﻿using Application.Helper;
 using Application.Interfaces;
 using Application.Services.OfferServices;
 using Application.Validator;
 using Domain.Repositories;
 using FluentValidation;
-using FluentValidation.AspNetCore;
 using HotelDemo.Helper;
 using HotelDemo.Persistence;
 using HotelDemo.ValidationFilters;
@@ -15,6 +14,17 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.Text.Json.Serialization;
+using Application;
+using Infrastructure;
+using AutoMapper;
+using Presentation.MappingProfiles.User;
+using Application.Dtos.User;
+using Presentation.ViewModels.User;
+using Presentation.Validator;
+using System.Reflection;
+using Hangfire;
+using Domain.Jops;
+using Application.Services;
 
 namespace Presentation.Extensions
 {
@@ -35,7 +45,6 @@ namespace Presentation.Extensions
                 options.SuppressModelStateInvalidFilter = true;
             });
 
-
             var connectionString = configuration.GetConnectionString("DefaultConnection") ??
                            throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
@@ -43,13 +52,16 @@ namespace Presentation.Extensions
                 options.UseSqlServer(connectionString));
 
             services.AddHttpContextAccessor();
-            services.AddFluentValidationAutoValidation();
-            services.AddValidatorsFromAssemblies(new[]
-            {
-                 typeof(Program).Assembly,
-                 typeof(IApplicationMarker).Assembly
-            });
+            //services.AddFluentValidationAutoValidation();
+            //services.AddValidatorsFromAssemblies(new[]
+            //{
+            //     typeof(Program).Assembly,
+            //     typeof(IApplicationMarker).Assembly
+            //});
 
+            //services.AddScoped<IValidator<RegisterViewModel>, RegisterViewModelValidator>();
+            //services.AddScoped<IValidator<LoginViewModel>, LoginViewModelValidator>();
+            //services.AddScoped<IValidator<R>, LoginViewModelValidator>();
             services.Configure<JwtSettings>(configuration.GetSection("Jwt"));
 
             services.AddAuthentication(opt => opt.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme)
@@ -57,7 +69,7 @@ namespace Presentation.Extensions
             opt =>
             {
                 var jwtsettings = configuration.GetSection("Jwt").Get<JwtSettings>();
-                var key = Encoding.UTF8.GetBytes(jwtsettings.Key);
+                var key = Encoding.ASCII.GetBytes(jwtsettings.Key);
                 opt.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
                 {
 
@@ -71,23 +83,24 @@ namespace Presentation.Extensions
                 };
 
             });
-            services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
-            services.AddScoped(typeof(IReadOnlyRepository<>), typeof(ReadOnlyRepository<>));
+            //services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+            //services.AddScoped(typeof(IReadOnlyRepository<>), typeof(ReadOnlyRepository<>));
 
-            services.AddScoped<IOffers, OfferService>();
+            services.AddInfrastructure();
+
 
             services.AddApplication();
             //services.AddScoped<IOfferRepository, OfferRepository>();
             // AutoMapper - scans assembly for all Profile classes
             //services.AddAutoMapper(typeof(Profile).Assembly);
-        /*    services.AddHangfire(configuration => configuration
-    .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
-    .UseSimpleAssemblyNameTypeSerializer()
-    .UseRecommendedSerializerSettings()
-    .UseSqlServerStorage(builder.Configuration.GetConnectionString("DefaultConnection"))); // تأكد من اسم الـ Connection String
+            // إعداد مخزن البيانات الخاص بـ Hangfire
+            services.AddHangfire(config => config.UseSqlServerStorage(connectionString));
 
-            // 2. إضافة الـ Server (المسؤول عن تنفيذ المهام في الخلفية)
-            services.AddHangfireServer();*/
+            // تشغيل السيرفر في الخلفية
+            services.AddHangfireServer();
+
+            // ربط الـ Interface بالـ Implementation
+           services.AddScoped<IBackgroundJobService, HangfireJobService>();
         }
     }
 }

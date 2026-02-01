@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Polly;
 using System.Linq.Expressions;
+using System.Reflection;
 
 namespace Infrastructure.Repositories
 {
@@ -59,6 +60,8 @@ namespace Infrastructure.Repositories
             {
                 context.Set<T>().Attach(entity);
                 entityEntry = context.Set<T>().Entry(entity);
+                entityEntry.State = EntityState.Unchanged;
+
             }
             else
             {
@@ -80,32 +83,38 @@ namespace Infrastructure.Repositories
             return result > 0;
 
         }
+        //type safe version, not usign reflection so it is faster 
+        public async Task<bool> UpdateIncludeAsync(T entity, params Expression<Func<T, object>>[] properties)
+        {
+            var local = context.Set<T>().Local.FirstOrDefault(x => x.Id == entity.Id);
+            EntityEntry<T> entityEntry;
 
-        public async Task<bool> IsExist(Expression<Func<T, bool>> creiteria)
+            if (local == null)
+            {
+                context.Set<T>().Attach(entity);
+                entityEntry = context.Entry(entity);
+            }
+            else
+            {
+                entityEntry = context.Entry(local);
+                entityEntry.CurrentValues.SetValues(entity);
+            }
+
+            foreach (var property in properties)
+            {
+                entityEntry.Property(property).IsModified = true;
+            }
+
+            var result = await context.SaveChangesAsync();
+            return result > 0;
+        }
+        public async Task<bool> IsExist(Expression<Func<T,bool>> creiteria)
         {
             var result = await context.Set<T>().Where(x => !x.IsDeleted).AnyAsync(creiteria);
             return result;
         }
       
 
-        public async Task<bool> Update(T entity)
-        {
-            var dbSet = context.Set<T>();
-
-            if (context.Entry(entity).State == EntityState.Detached)
-            {
-                dbSet.Attach(entity);
-            }
-
-            context.Entry(entity).State = EntityState.Modified;
-            var result = await context.SaveChangesAsync();
-            if (result > 0)
-            {
-                return true;
-            }
-            return false;
-        }
-       
         public async Task<T?> GetByIdAsync(Guid id)
         {
             return await context.Set<T>()
