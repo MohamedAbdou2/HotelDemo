@@ -282,37 +282,62 @@ namespace Application.Services
         }
         public async Task<ResponseDto<bool>> UpdateRole(UpdateRoleDto dto, Guid adminId)
         {
+           
             var validationResult = _updateRoleDtoValidator.Validate(dto);
-            if (!validationResult.IsValid)
-                return ResponseDto<bool>.ValidaitonFail(validationResult);
+            if (!validationResult.IsValid) return ResponseDto<bool>.ValidaitonFail(validationResult);
 
+          
             if (!await IsAdmin(adminId))
                 return ResponseDto<bool>.Fail(ErrorCode.BadRequest, "Only admin can change user roles");
 
-            var userQurable = await userRepository.GetAll(x => x.Id == dto.userId);
-            var user = userQurable.FirstOrDefault();
-            if (user == null)
-                return ResponseDto<bool>.Fail(ErrorCode.UserNotFound, "User not found");
+            
+            var (userRole, roleId, error) = await GetAndValidateUserRole(dto);
+            if (error != null) return error;
 
-            var roleQurable = await roleRepository.GetAll(x => x.Name == dto.roleName);
-            var role =await roleQurable.FirstOrDefaultAsync();
-            if (role == null)
-                return ResponseDto<bool>.Fail(ErrorCode.RoleNotFound, "Role not found");
+          
+            await HandleRoleTransition(dto.userId, userRole.RoleId, roleId);
 
-            var userRoleQurable = await userRoleRepository.GetAll(x => x.UserId == dto.userId);
-            var userRole =await userRoleQurable.FirstOrDefaultAsync();
-            if (userRole == null)
-                return ResponseDto<bool>.Fail(ErrorCode.UserRoleNotFound, "User role not found");
+          
+            userRole.RoleId = roleId;
+            var result = await userRoleRepository.UpdateIncludeAsync(userRole, nameof(UserRole.RoleId));
 
-            userRole.RoleId = role.Id;
-
-            var result =await userRoleRepository.UpdateIncludeAsync(userRole , nameof(UserRole.RoleId));
-            //there is a problem here 
-            // if i change role  of staff to customer the staff record will still exist in staff table, so i need to handle that case
-            // if i change role of customer to staff i need to create a new staff record
-            return result ? ResponseDto<bool>.Success( result, "Role Updated Successfully")
-                : ResponseDto<bool>.Fail(ErrorCode.FailedToUpdateUserRole, "Failed to update user role");
+            return result ? ResponseDto<bool>.Success(true, "Role Updated Successfully")
+                          : ResponseDto<bool>.Fail(ErrorCode.FailedToUpdateUserRole, "Failed to update user role");
         }
+
+        private async Task<(UserRole userRole, UserRoleCode targetRoleId, ResponseDto<bool> error)> GetAndValidateUserRole(UpdateRoleDto dto)
+        {
+            var role = (await roleRepository.GetAll(x => x.Name == dto.roleName)).FirstOrDefault();
+            if (role == null)
+                return (null, default, ResponseDto<bool>.Fail(ErrorCode.RoleNotFound, "الدور غير موجود."));
+
+            var userRole = (await userRoleRepository.GetAll(x => x.UserId == dto.userId)).FirstOrDefault();
+            if (userRole == null)
+                return (null, default, ResponseDto<bool>.Fail(ErrorCode.UserRoleNotFound, "علاقة الدور للمستخدم غير موجودة."));
+
+            
+            if (userRole.RoleId == role.Id)
+                return (null, default, ResponseDto<bool>.Fail(ErrorCode.UserAlreadyHaveThisRole, "المستخدم يمتلك هذا الدور بالفعل."));
+
+            return (userRole, role.Id, null);
+        }
+        private async Task HandleRoleTransition(Guid userId, UserRoleCode oldRole, UserRoleCode newRole)
+        {
+           
+            if (newRole == UserRoleCode.Staff)
+            {
+                var exists = await staffRepository.IsExist(x => x.UserId == userId);
+                if (!exists)
+                    await staffRepository.Add(new Staff { UserId = userId, HireDate = DateTime.Now });
+            }
+            else if (oldRole == UserRoleCode.Staff)
+            {
+                var staffRecord = (await staffRepository.GetAll(x => x.UserId == userId)).FirstOrDefault();
+                if (staffRecord != null)
+                    await staffRepository.Delete(staffRecord.Id);
+            }
+        }
+
         public async Task<bool> IsAdmin(Guid userId)
         {
             var userRoleQurable = await userRoleRepository.GetAll(x => x.UserId == userId);

@@ -1,4 +1,5 @@
-﻿using Application.Dtos.User.Staff;
+﻿using Application.Dtos.User;
+using Application.Dtos.User.Staff;
 using Application.Helper;
 using Application.Interfaces;
 using Application.Services;
@@ -8,6 +9,7 @@ using Domain.Models;
 using HotelDemo.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Presentation.ViewModels.User;
 using Presentation.ViewModels.User.Staff;
 
 namespace Presentation.Controllers
@@ -35,9 +37,9 @@ namespace Presentation.Controllers
              return Ok(result);
          }
  */
-      //  [Authorize/*(Roles ="admin")*/]
+        //  [Authorize/*(Roles ="admin")*/]
         [HttpPost("staff/register")]
-        public async Task<ActionResult<ResponseViewModel<bool>>> RegisterStaff([FromBody]StaffRegisterViewModel model)
+        public async Task<ActionResult<ResponseViewModel<bool>>> RegisterStaff([FromBody] StaffRegisterViewModel model)
         {
             var userId = _currentUser.GetUserId();
 
@@ -48,9 +50,21 @@ namespace Presentation.Controllers
 
             var result = await _userService.StaffRegister(dto);
 
-            return result.Data ? 
-                ResponseViewModel<bool>.Success(result.Data , "staff register successfully")  
-                : ResponseViewModel<bool>.Fail(result.ErrorCode, "Error Aqure When regiter staff" + "\n" +  result.Message);
+            return result.Data ?
+                ResponseViewModel<bool>.Success(result.Data, "staff register successfully")
+                : ResponseViewModel<bool>.Fail(result.ErrorCode, "Error Aqure When regiter staff" + "\n" + result.Message);
+        }
+        [HttpPut]
+        public async Task<ActionResult<ResponseViewModel<bool>>> UpdateUserRole([FromBody] UpdateRoleViewModel model)
+        {
+            var userId = _currentUser.GetUserId();
+            if (userId != Guid.Empty && userId is not null)
+                return ResponseViewModel<bool>.Fail(ErrorCode.UserNotFound, "Can not Find User");
+            var dto = _mapper.Map<UpdateRoleDto>(model);
+            var result = await _userService.UpdateRole(dto, userId.Value);
+            return result.Data ?
+                ResponseViewModel<bool>.Success(result.Data, "User role updated successfully")
+                : ResponseViewModel<bool>.Fail(result.ErrorCode, "Error Aqure When updating user role" + "\n" + result.Message);
         }
     }
 }
