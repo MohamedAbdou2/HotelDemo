@@ -19,12 +19,14 @@ namespace Application.Services.ReservationServices
         private readonly IGenericRepository<Payment> _paymentRepository;
         private readonly IMapper _mapper;
         private readonly IValidator<ReservationDto> _reservationValidator;
+        private readonly IBackgroundJobService _backgroundJobService;   
 
         public RerservationServices(IGenericRepository<Room> roomRepository,
             IGenericRepository<Reservation> reservationRepository,
             IGenericRepository<Payment> paymentRepository,
             IMapper mapper,
-            IValidator<ReservationDto> reservationValidator)
+            IValidator<ReservationDto> reservationValidator,
+            IBackgroundJobService backgroundJobService)
         {
 
             _roomRepository = roomRepository;
@@ -32,6 +34,7 @@ namespace Application.Services.ReservationServices
             _paymentRepository = paymentRepository;
             _mapper = mapper;
             _reservationValidator = reservationValidator;
+            _backgroundJobService = backgroundJobService;
         }
 
         public async Task<ResponseDto<ReservationResponseDto>> CreateReservation(ReservationDto reservationDto)
@@ -64,24 +67,23 @@ namespace Application.Services.ReservationServices
                  
                     var isAvailable = await IsRoomAvailable(dto.RoomId, dto.CheckInDate, dto.CheckOutDate);
                     if (!isAvailable)
-                        return ResponseDto<bool>.Fail(ErrorCode.RoomNotAvailable, "الغرفة محجوزة في هذه الفترة.");
+                        return ResponseDto<bool>.Fail(ErrorCode.RoomNotAvailable, "The room is already booked for the selected period.");
 
                 
                     var roomQuery = await _roomRepository.GetbyId(dto.RoomId);
                     var room = roomQuery.FirstOrDefault();
-                     if (room == null || room.IsAvailable) 
-                        return ResponseDto<bool>.Fail(ErrorCode.RoomNotFound, "الغرفة غير متاحة حالياً.");
+                     if (room == null || ! room.IsAvailable) 
+                        return ResponseDto<bool>.Fail(ErrorCode.RoomNotFound, "The room is currently not available for booking.");
 
               
                     var reservation = _mapper.Map<Reservation>(dto);
                     await _reservationRepository.Add(reservation);
-                    
 
-                    await _roomRepository.Update(room);
-            
-                    return ResponseDto<bool>.Success(true, "تم الحجز بنجاح!");
-               
-               
+                room.IsAvailable = false;
+                await _roomRepository.Update(room);
+                _backgroundJobService.ScheduleReservationCancellation(reservation.Id, TimeSpan.FromMinutes(10));
+                return ResponseDto<bool>.Success(true, "Reservation created successfully! Please complete the payment within 10 minutes.");
+                
             });
         }
         private async Task<bool> RoomAvailableAsync(Guid roomId)
@@ -101,25 +103,31 @@ namespace Application.Services.ReservationServices
                               checkOut > r.CheckInDate);
         }
 
+      
+
         public async Task CheckAndCancelReservation(Guid reservationId)
         {
             var reservationQuery = await _reservationRepository.GetbyId(reservationId);
             var reservation = reservationQuery.FirstOrDefault();
-
+            
             if (reservation != null && reservation.ReservationStatusId == ReservationStatusCode.Pending)
             {
                 reservation.ReservationStatusId = ReservationStatusCode.Cancelled;
+                await _reservationRepository.UpdateIncludeAsync(reservation, nameof(Reservation.ReservationStatusId));
 
-               
-                await _reservationRepository.UpdateIncludeAsync(reservation , nameof(Reservation.ReservationStatusId));
+                var roomQuery = await _roomRepository.GetbyId(reservation.RoomId);
+                var room = roomQuery.FirstOrDefault();
+                if (room != null)
+                {
+                    room.IsAvailable = true;
+                    await _roomRepository.Update(room);
+                }
             }
+
         }
 
 
-        /*   Background Service: تعمل كل 10 دقائق(باستخدام IHostedService أو Hangfire).
-
-   الوظيفة: تبحث عن أي حجز حالته Pending ومر على إنشائه أكثر من 20 دقيقة، وتقوم بتغيير حالته إلى Cancelled أو Expired لتعود الغرفة متاحة للآخرين.*/
-    }
+   }
 
 
 
