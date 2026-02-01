@@ -8,7 +8,7 @@ namespace HotelDemo.Persistence.Infrastructure.EntitiesConfigurations
     {
         public void Configure(EntityTypeBuilder<Reservation> builder)
         {
-            builder.ToTable("Reservations", t=>
+            builder.ToTable("Reservations", t =>
             {
                 t.HasCheckConstraint(
                     "CK_Reservations_CheckOut_After_CheckIn",

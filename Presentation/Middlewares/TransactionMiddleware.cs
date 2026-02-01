@@ -6,7 +6,7 @@ namespace HotelDemo.Middlewares
     {
         private readonly ApplicationDbContext _context;
 
-        public TransactionMiddleWare(ApplicationDbContext context )
+        public TransactionMiddleWare(ApplicationDbContext context)
         {
             this._context = context;
         }
