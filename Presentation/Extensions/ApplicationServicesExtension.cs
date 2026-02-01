@@ -23,8 +23,9 @@ using Presentation.ViewModels.User;
 using Presentation.Validator;
 using System.Reflection;
 using Hangfire;
-using Domain.Jops;
+
 using Application.Services;
+using Infrastructure.BackgroundServices;
 
 namespace Presentation.Extensions
 {

@@ -5,7 +5,7 @@ namespace Application.Interfaces
 {
     public interface IReservationServices
     {
-       
         Task<ResponseDto<ReservationResponseDto>> CreateReservation(ReservationDto reservationDto);
+        Task CheckAndCancelReservation(Guid reservationId);
     }
 }

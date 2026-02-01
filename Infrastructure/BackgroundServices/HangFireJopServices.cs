@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Application.Interfaces;
-using Domain.Jops;
+
 using Hangfire;
 namespace Infrastructure.BackgroundServices
 {
@@ -12,9 +12,9 @@ namespace Infrastructure.BackgroundServices
 
     public class HangfireJobService : IBackgroundJobService
     {
-        private readonly IBackgroundJobService _jobClient;
+        private readonly IBackgroundJobClient _jobClient;
 
-        public HangfireJobService(IBackgroundJobService jobClient)
+        public HangfireJobService(IBackgroundJobClient jobClient)
         {
             _jobClient = jobClient;
         }
