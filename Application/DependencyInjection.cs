@@ -2,6 +2,7 @@
 using Application.Interfaces;
 using Application.Services;
 using Application.Services.OfferServices;
+using Application.Services.PaymentServices;
 using Application.Validator;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,6 +19,7 @@ namespace Application
             services.AddScoped<IRoomService, RoomService>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IOffers, OfferService>();
+            services.AddScoped<IPaymentService, PaymentService>();
 
             services.AddAutoMapper(cfg =>
             {

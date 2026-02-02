@@ -23,6 +23,8 @@ namespace HotelDemo.Persistence
         public DbSet<Staff> Staff { get; set; }
         public DbSet<Room> Rooms { get; set; }
         public DbSet<Reservation> Reservations { get; set; }
+        public DbSet<ReservationCancellation> ReservationCancellations { get; set; }
+
         public DbSet<Payment> Payments { get; set; }
         public DbSet<Feedback> Feedbacks { get; set; }
         public DbSet<FeedbackResponse> FeedbackResponses { get; set; }
