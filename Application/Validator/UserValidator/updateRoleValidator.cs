@@ -8,9 +8,9 @@ using System.Threading.Tasks;
 
 namespace Application.Validator.UserValidator
 {
-    public class updateValidatorRole : AbstractValidator<UpdateRoleDto>
+    public class updateRoleValidator : AbstractValidator<UpdateRoleDto>
     {
-        public updateValidatorRole() 
+        public updateRoleValidator() 
         { 
          RuleFor(x => x.userId).NotEmpty().WithMessage("UserId is required");
          RuleFor(x => x.roleName).NotEmpty().WithMessage("RoleName is required");
