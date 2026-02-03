@@ -44,14 +44,39 @@ namespace Application.Services.ReservationServices
             {
                 return ResponseDto<ReservationResponseDto>.ValidaitonFail(validationResult);
             }
-            if (!await RoomAvailableAsync(reservationDto.RoomId))
+
+            var isAvailable = await IsRoomAvailable(reservationDto.RoomId, reservationDto.CheckInDate, reservationDto.CheckOutDate);
+            if (!isAvailable)
             {
-                return ResponseDto<ReservationResponseDto>.Fail(ErrorCode.NotAvailableRoom,
-                    "this Room Is not availabe for reservation Now");
+                return ResponseDto<ReservationResponseDto>.Fail(ErrorCode.RoomNotAvailable,
+                    "The room is already booked for the selected period.");
             }
 
+            var roomQuery = await _roomRepository.GetbyId(reservationDto.RoomId);
+            var room = roomQuery.FirstOrDefault();
+            if (room == null || !room.IsAvailable)
+            {
+                return ResponseDto<ReservationResponseDto>.Fail(ErrorCode.RoomNotFound,
+                    "The room is currently not available for booking.");
+            }
 
-            throw new NotImplementedException();
+            var reservation = _mapper.Map<Reservation>(reservationDto);
+            reservation.ExpiresAt = DateTime.UtcNow.AddMinutes(10);
+            reservation.ReservationStatusId = ReservationStatusCode.Pending;
+
+            await _reservationRepository.Add(reservation);
+
+            room.IsAvailable = false;
+            await _roomRepository.UpdateIncludeAsync(room , x=>x.IsAvailable);
+
+            _backgroundJobService.ScheduleReservationCancellation(reservation.Id, TimeSpan.FromMinutes(10));
+
+            var response = _mapper.Map<ReservationResponseDto>(reservation);
+            response.RoomNumber = room.RoomNumber;
+            response.Status = reservation.ReservationStatusId.ToString();
+
+            return ResponseDto<ReservationResponseDto>.Success(response,
+                "Reservation created successfully! Please complete the payment within 10 minutes.");
         }
         public async Task<ResponseDto<bool>> BookRoomAsync(ReservationDto dto)
         {
@@ -109,7 +134,7 @@ namespace Application.Services.ReservationServices
         {
             var reservationQuery = await _reservationRepository.GetbyId(reservationId);
             var reservation = reservationQuery.FirstOrDefault();
-            
+
             if (reservation != null && reservation.ReservationStatusId == ReservationStatusCode.Pending)
             {
                 reservation.ReservationStatusId = ReservationStatusCode.Cancelled;
@@ -124,6 +149,23 @@ namespace Application.Services.ReservationServices
                 }
             }
 
+        }
+
+        public async Task<ResponseDto<ReservationResponseDto>> GetReservationById(Guid reservationId)
+        {
+            var reservationQuery = await _reservationRepository.GetbyId(reservationId);
+            var reservation = reservationQuery.FirstOrDefault();
+
+            if (reservation == null)
+            {
+                return ResponseDto<ReservationResponseDto>.Fail(ErrorCode.NotFound,
+                    "Reservation not found.");
+            }
+
+            var response = _mapper.Map<ReservationResponseDto>(reservation);
+            response.Status = reservation.ReservationStatusId.ToString();
+
+            return ResponseDto<ReservationResponseDto>.Success(response);
         }
 
 

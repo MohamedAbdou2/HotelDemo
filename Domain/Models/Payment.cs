@@ -95,25 +95,34 @@ namespace Domain.Models
         [MaxLength(100)]
         public string? FailureCode { get; set; }
 
-        // ==================== Refund Info ====================
+        // ==================== Refund Info (Legacy) ====================
+        // ⚠️ Kept for backward compatibility - Use Refund table instead
 
-        /// <summary>
-        /// Reason for refund
-        /// </summary>
         [MaxLength(500)]
+        [Obsolete("Use Refund table instead")]
         public string? RefundReason { get; set; }
 
-        /// <summary>
-        /// Amount refunded (can be partial)
-        /// </summary>
         [Column(TypeName = "decimal(18,2)")]
+        [Obsolete("Use Refunds collection instead")]
         public decimal? RefundAmount { get; set; }
 
-        /// <summary>
-        /// Transaction ID for the refund operation
-        /// </summary>
         [MaxLength(200)]
+        [Obsolete("Use Refund.GatewayRefundId instead")]
         public string? RefundTransactionId { get; set; }
+
+        // ==================== Computed Properties ====================
+
+        /// <summary>
+        /// Total amount refunded from all refunds
+        /// </summary>
+        [NotMapped]
+        public decimal TotalRefunded => Refunds?.Where(r => r.RefundStatusId == RefundStatusCode.Completed).Sum(r => r.Amount) ?? 0;
+
+        /// <summary>
+        /// Remaining amount that can be refunded
+        /// </summary>
+        [NotMapped]
+        public decimal RefundableAmount => Amount - TotalRefunded;
 
         // ==================== Concurrency Control ====================
 
@@ -128,6 +137,7 @@ namespace Domain.Models
 
         public virtual Reservation Reservation { get; set; } = null!;
         public virtual Customer Customer { get; set; } = null!;
+        public virtual ICollection<Refund> Refunds { get; set; } = new List<Refund>();
         public virtual PaymentMethod PaymentMethod { get; set; } = null!;
         public virtual PaymentStatus PaymentStatus { get; set; } = null!;
 

@@ -20,6 +20,7 @@ namespace Application
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IOffers, OfferService>();
             services.AddScoped<IPaymentService, PaymentService>();
+            services.AddScoped<IRefundService, RefundService>();
 
             services.AddAutoMapper(cfg =>
             {

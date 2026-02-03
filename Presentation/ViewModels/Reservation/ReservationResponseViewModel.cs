@@ -1,8 +1,9 @@
-﻿using Domain.Enums;
-
-namespace Application.Dtos.Reservation
+namespace Presentation.ViewModels.Reservation
 {
-    public class ReservationResponseDto
+    /// <summary>
+    /// View model for reservation response (output to client)
+    /// </summary>
+    public class ReservationResponseViewModel
     {
         public Guid Id { get; set; }
         public Guid RoomId { get; set; }
@@ -11,11 +12,14 @@ namespace Application.Dtos.Reservation
         public string CustomerName { get; set; } = string.Empty;
         public DateTime CheckInDate { get; set; }
         public DateTime CheckOutDate { get; set; }
+        public int NumberOfNights { get; set; }
         public decimal TotalPrice { get; set; }
-        public ReservationStatusCode ReservationStatusId { get; set; }
+        public int StatusCode { get; set; }
         public string Status { get; set; } = string.Empty;
         public DateTime? ExpiresAt { get; set; }
+        public string? ExpiresIn { get; set; }
         public DateTime CreatedAt { get; set; }
         public string PaymentUrl { get; set; } = string.Empty;
+        public string GetDetailsUrl { get; set; } = string.Empty;
     }
 }

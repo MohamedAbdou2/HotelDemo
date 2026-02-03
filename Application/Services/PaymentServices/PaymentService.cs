@@ -160,26 +160,11 @@ namespace Application.Services.PaymentServices
             return ResponseDto<List<PaymentResponseDto>>.Success(paymentDtos);
         }
 
+        [Obsolete("Use RefundService.InitiateRefundAsync instead")]
         public async Task<ResponseDto<PaymentResponseDto>> RefundPaymentAsync(Guid paymentId, string refundReason)
         {
-            var paymentQuery = await _paymentRepository.GetbyId(paymentId);
-            var payment = paymentQuery.FirstOrDefault();
-
-            if (payment == null)
-                return ResponseDto<PaymentResponseDto>.Fail(ErrorCode.NotFound, "Payment not found");
-
-            if (payment.PaymentStatusId != PaymentStatusCode.Paid)
-                return ResponseDto<PaymentResponseDto>.Fail(ErrorCode.BadRequest, "Can only refund paid payments");
-
-            payment.PaymentStatusId = PaymentStatusCode.Refunded;
-            payment.RefundedAt = DateTime.UtcNow;
-            payment.RefundReason = refundReason;
-            payment.RefundAmount = payment.Amount;
-
-            await _paymentRepository.Update(payment);
-
-            var paymentDto = _mapper.Map<PaymentResponseDto>(payment);
-            return ResponseDto<PaymentResponseDto>.Success(paymentDto, "Payment refunded successfully");
+            return ResponseDto<PaymentResponseDto>.Fail(ErrorCode.BadRequest, 
+                "This method is deprecated. Use /api/refund/initiate endpoint instead");
         }
     }
 }

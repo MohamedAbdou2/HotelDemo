@@ -97,14 +97,19 @@ namespace Presentation.Extensions
             //services.AddAutoMapper(typeof(Profile).Assembly);
             services.AddHangfire(config => config.UseSqlServerStorage(connectionString));
 
-           
+
             services.AddHangfireServer();
 
-         
+
            services.AddScoped<IBackgroundJobService, HangfireJobService>();
 
-         
+
             services.AddScoped<IStripePaymentService, StripePaymentService>();
+            // Register IHttpContextAccessor (required by CurrentUser)
+            services.AddHttpContextAccessor();
+
+            // Register CurrentUser as a scoped service
+            services.AddScoped<CurrentUser>();
         }
     }
 }
