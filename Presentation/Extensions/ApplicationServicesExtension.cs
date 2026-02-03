@@ -34,6 +34,7 @@ namespace Presentation.Extensions
     {
         public static void AddApplicationServices(this IServiceCollection services, IConfiguration configuration)
         {// Add services to the container.
+            services.AddApplication();
 
             services.AddControllers(options =>
             {
@@ -66,7 +67,9 @@ namespace Presentation.Extensions
             //services.AddScoped<IValidator<R>, LoginViewModelValidator>();
             services.Configure<JwtSettings>(configuration.GetSection("Jwt"));
 
-            services.AddAuthentication(opt => opt.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme)
+            services.AddAuthentication(
+                opt => opt.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme
+                )
             .AddJwtBearer(
             opt =>
             {
@@ -87,11 +90,18 @@ namespace Presentation.Extensions
             });
             //services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
             //services.AddScoped(typeof(IReadOnlyRepository<>), typeof(ReadOnlyRepository<>));
-
+            services.AddAuthorization();
             services.AddInfrastructure();
-
-
             services.AddApplication();
+            //services.AddScoped<IOfferRepository, OfferRepository>();
+            // AutoMapper - scans assembly for all Profile classes
+            //services.AddAutoMapper(typeof(Profile).Assembly);           
+            services.AddAutoMapper(cfg =>
+            {
+            }, Assembly.GetExecutingAssembly());
+            services.AddValidatorsFromAssembly(typeof(Program).Assembly);
+            services.AddScoped<CurrentUser>();
+
             //services.AddScoped<IOfferRepository, OfferRepository>();
             // AutoMapper - scans assembly for all Profile classes
             //services.AddAutoMapper(typeof(Profile).Assembly);

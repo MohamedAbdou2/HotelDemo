@@ -12,7 +12,6 @@ namespace Application.MappingProfiles.User
             //.ForMember(dst => dst.Username, o => o.MapFrom(r => BCrypt.Net.BCrypt.HashPassword(r.userName)));
 
             CreateMap<UpdateUserDto, Domain.Models.User>();
-
         }
     }
 }

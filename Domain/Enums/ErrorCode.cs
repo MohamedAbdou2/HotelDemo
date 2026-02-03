@@ -22,6 +22,9 @@
         RoomCreationFailed = 202,
         RoomUpdateFailed = 203,
         RoomDeletionFailed = 204,
+        StaffRegisterFail = 205,
+        CanNotUpdateCustomerRole = 206,
+        UserAlreadyHaveThisRole = 207,
 
      
         NotAvailableRoom = 105,
