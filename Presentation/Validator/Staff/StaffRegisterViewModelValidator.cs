@@ -1,16 +1,11 @@
-﻿using Application.Dtos.User.Staff;
-using FluentValidation;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using FluentValidation;
+using Presentation.ViewModels.User.Staff;
 
-namespace Application.Validator.UserValidator
+namespace Presentation.Validator.Staff
 {
-    public class StaffRegisterDtoValidator : AbstractValidator<StaffRegisterDto>
+    public class StaffRegisterViewModelValidator : AbstractValidator<StaffRegisterViewModel>
     {
-        public StaffRegisterDtoValidator()
+        public StaffRegisterViewModelValidator()
         {
             RuleFor(x => x.userName)
                 .NotEmpty().WithMessage("Username is required.")
@@ -28,15 +23,13 @@ namespace Application.Validator.UserValidator
                 .EmailAddress().WithMessage("A valid email is required.");
 
             RuleFor(x => x.phoneNumber)
-                .NotEmpty()
-                .WithMessage("Phone number is required.")
-                .Matches(@"^\d{10,15}$")
-                .WithMessage("Phone number must be between 10 and 15 digits.");
+             .NotEmpty()
+             .WithMessage("Phone number is required.")
+             .Matches(@"^\d{10,15}$")
+             .WithMessage("Phone number must be between 10 and 15 digits.");
 
             RuleFor(x => x.HireDate)
                 .LessThanOrEqualTo(DateTime.UtcNow).WithMessage("Hire date cannot be in the future.");
-
         }
-
     }
 }

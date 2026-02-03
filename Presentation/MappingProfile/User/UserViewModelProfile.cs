@@ -17,7 +17,9 @@ namespace Presentation.MappingProfiles.User
             CreateMap<LoginViewModel, LoginDto>();
             CreateMap<ResetPasswordViewModel, ResetPasswordDto>();
             CreateMap<UpdateUserViewModel, UpdateUserDto>();
-             
+            CreateMap<UpdateRoleViewModel, UpdateRoleDto>();
+
+
         }
     }
 }
