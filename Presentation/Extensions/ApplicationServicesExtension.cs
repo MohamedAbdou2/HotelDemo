@@ -91,7 +91,15 @@ namespace Presentation.Extensions
             //services.AddScoped(typeof(IReadOnlyRepository<>), typeof(ReadOnlyRepository<>));
             services.AddAuthorization();
             services.AddInfrastructure();
-
+            services.AddApplication();
+            //services.AddScoped<IOfferRepository, OfferRepository>();
+            // AutoMapper - scans assembly for all Profile classes
+            //services.AddAutoMapper(typeof(Profile).Assembly);           
+            services.AddAutoMapper(cfg =>
+            {
+            }, Assembly.GetExecutingAssembly());
+            services.AddValidatorsFromAssembly(typeof(Program).Assembly);
+            services.AddScoped<CurrentUser>();
 
             //services.AddScoped<IOfferRepository, OfferRepository>();
             // AutoMapper - scans assembly for all Profile classes
