@@ -19,10 +19,6 @@ namespace Application
 
             services.AddScoped<IRoomService, RoomService>();
 
-            services.AddAutoMapper(cfg => {
-            }, Assembly.GetExecutingAssembly());
-            services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly);
-
 
             return services;
         }

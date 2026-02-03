@@ -1,7 +1,9 @@
 ﻿using Application.Dtos;
 using Application.Dtos.Room;
 using Application.Interfaces;
+using Application.Services;
 using AutoMapper;
+using FluentValidation;
 using HotelDemo.ViewModels;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -15,10 +17,16 @@ namespace Presentation.Controllers
     {
         private readonly IRoomService _roomService;
         private readonly IMapper _mapper;
-        public RoomController(IRoomService roomService,IMapper mapper)
+        private readonly IValidator<CreateRoomRequestViewModel> _createRoomValidator;
+        private readonly IValidator<UpdateRoomRequestViewModel> _updateRoomValidator;
+        private readonly IValidator<RoomFilterRequestViewModel> _roomFilterValidator;
+        public RoomController(IRoomService roomService,IMapper mapper, IValidator<CreateRoomRequestViewModel> createRoomValidator ,IValidator<UpdateRoomRequestViewModel> updateRoomValidator, IValidator<RoomFilterRequestViewModel> roomFilterValidator)
         {
             _roomService = roomService;
             _mapper = mapper;
+            _createRoomValidator = createRoomValidator;
+            _updateRoomValidator = updateRoomValidator;
+            _roomFilterValidator = roomFilterValidator;
         }
 
 
@@ -53,6 +61,10 @@ namespace Presentation.Controllers
         [HttpPost("")]
         public async Task<ResponseViewModel<bool>> CreateRoom([FromBody] CreateRoomRequestViewModel dto)
         {
+            var validator = _createRoomValidator.Validate(dto);
+            if (!validator.IsValid)
+                return ResponseViewModel<bool>.ValidationFail(validator);
+
             var createRoomDto = _mapper.Map<CreateRoomRequestDto>(dto);
             var result = await _roomService.CreateRoom(createRoomDto);
             if (!result.IsSuccess)
@@ -67,6 +79,9 @@ namespace Presentation.Controllers
         [HttpPut("{Id}")]
         public async Task<ResponseViewModel<bool>> UpdateRoom(Guid Id, [FromBody] UpdateRoomRequestViewModel dto)
         {
+            var validator = _updateRoomValidator.Validate(dto);
+            if (!validator.IsValid)
+                return ResponseViewModel<bool>.ValidationFail(validator);
             var updateRoomDto = _mapper.Map<UpdateRoomRequestDto>(dto);
             var result = await _roomService.UpdateRoom(Id, updateRoomDto);
             if (!result.IsSuccess)
@@ -88,25 +103,30 @@ namespace Presentation.Controllers
         }
 
         [HttpGet("filter")]
-        public async Task<ResponseViewModel<PaginatedListResponseViewModel<IEnumerable<GetRoomResponseViewModel>>>> GetRoomsByFilter([FromQuery] RoomFilterRequestViewModel filterDto)
+        public async Task<ResponseViewModel<PaginatedListResponseViewModel<GetRoomResponseViewModel>>> GetRoomsByFilter([FromQuery] RoomFilterRequestViewModel filterDto)
         {
+            var validator = _roomFilterValidator.Validate(filterDto);
+            if (!validator.IsValid)
+                return ResponseViewModel<PaginatedListResponseViewModel<GetRoomResponseViewModel>>.ValidationFail(validator);
             var filterRequestDto = _mapper.Map<RoomFilterRequestDto>(filterDto);
             var result = await _roomService.GetRoomsByFilter(filterRequestDto);
             if (!result.IsSuccess)
             {
-                return ResponseViewModel<PaginatedListResponseViewModel<IEnumerable<GetRoomResponseViewModel>>>.Fail(result.ErrorCode, result.Message);
+                return ResponseViewModel<PaginatedListResponseViewModel<GetRoomResponseViewModel>>.Fail(result.ErrorCode, result.Message);
             }
             var roomsViewModel = _mapper.Map<IEnumerable<GetRoomResponseViewModel>>(result.Data.Items);
-            var paginatedResponse = await PaginatedListResponseViewModel<IEnumerable<GetRoomResponseViewModel>>.CreateAsync(
+            var paginatedResponse = new PaginatedListResponseViewModel<GetRoomResponseViewModel>(
+            roomsViewModel,
+            result.Data.PageNumber,
+            result.Data.TotalPages,
+            filterDto.PageSize
+        );
 
-                (IQueryable<IEnumerable<GetRoomResponseViewModel>>)roomsViewModel,
-                filterDto.PageNumber,
-                filterDto.PageSize
 
-                );
-            return ResponseViewModel<PaginatedListResponseViewModel<IEnumerable<GetRoomResponseViewModel>>>.Success(paginatedResponse);
+            return ResponseViewModel<PaginatedListResponseViewModel<GetRoomResponseViewModel>>.Success(paginatedResponse);
 
 
         }
     }
 }
+

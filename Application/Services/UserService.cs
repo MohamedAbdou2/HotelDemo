@@ -62,7 +62,7 @@ namespace Application.Services
         {
             var validator = registerDtoValidator.Validate(dto);
             if (!validator.IsValid)
-                return ResponseDto<bool>.ValidaitonFail(validator);
+                return ResponseDto<bool>.ValidationFail(validator);
 
             if (await CheckByEmail(dto.email))
                return ResponseDto<bool>.Fail(ErrorCode.EmailNotRegistered, "This email is already registered");
@@ -91,7 +91,7 @@ namespace Application.Services
         {
             var validator = loginDtoValidator.Validate(dto);
             if (!validator.IsValid)
-                return ResponseDto<string>.ValidaitonFail(validator);
+                return ResponseDto<string>.ValidationFail(validator);
 
             var user = await GetUserbyEmail(dto.Email);
             if (user==null)
@@ -132,7 +132,7 @@ namespace Application.Services
         {
             var validator = resetPasswordDtoValidator.Validate(dto);
             if (!validator.IsValid)
-                return ResponseDto<bool>.ValidaitonFail(validator);
+                return ResponseDto<bool>.ValidationFail(validator);
 
             var usetOtp = await ValidateOtp(dto.otp);
             if (usetOtp==null)

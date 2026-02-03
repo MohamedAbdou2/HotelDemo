@@ -1,11 +1,14 @@
 ﻿using Application.Dtos;
 using Application.Dtos.Room;
+using Application.Dtos.Room.RoomValidators;
 using Application.Interfaces;
+using Application.Validator;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Domain.Enums;
 using Domain.Models;
 using Domain.Repositories;
+using FluentValidation;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,10 +21,17 @@ namespace Application.Services
     {
         private readonly IGenericRepository<Room> _roomRepository;
         private readonly IMapper _mapper;
-        public RoomService(IGenericRepository<Room> roomRepository, IMapper mapper)
+        private readonly IValidator<CreateRoomRequestDto> _createRoomValidator;
+        private readonly IValidator<UpdateRoomRequestDto> _updateRoomValidator;
+        private readonly IValidator<RoomFilterRequestDto> _roomFilterValidator;
+
+        public RoomService(IGenericRepository<Room> roomRepository, IMapper mapper, IValidator<CreateRoomRequestDto> createRoomValidator, IValidator<UpdateRoomRequestDto> updateRoomValidator, IValidator<RoomFilterRequestDto> roomFilterValidator)
         {
             _roomRepository = roomRepository;
             _mapper = mapper;
+            _createRoomValidator = createRoomValidator;
+            _updateRoomValidator = updateRoomValidator;
+            _roomFilterValidator = roomFilterValidator;
         }
 
         public async Task<ResponseDto<IEnumerable<GetRoomResponseDto>>> GetAllRooms()
@@ -49,6 +59,10 @@ namespace Application.Services
 
         public async Task<ResponseDto<bool>> CreateRoom(CreateRoomRequestDto dto)
         {
+            var validator = _createRoomValidator.Validate(dto);
+            if (!validator.IsValid)
+                return ResponseDto<bool>.ValidationFail(validator);
+
             var room = _mapper.Map<Room>(dto);
             var result = await _roomRepository.Add(room);
             if (!result)
@@ -62,6 +76,9 @@ namespace Application.Services
 
         public async Task<ResponseDto<bool>> UpdateRoom(Guid roomId, UpdateRoomRequestDto dto)
         {
+            var validator = _updateRoomValidator.Validate(dto);
+            if (!validator.IsValid)
+                return ResponseDto<bool>.ValidationFail(validator);
             var roomExists = await _roomRepository.IsExist(r => r.Id == roomId);
             if (!roomExists)
             {
@@ -97,8 +114,11 @@ namespace Application.Services
 
 
 
-        public async Task<ResponseDto<PaginatedListResponseDto<IEnumerable<GetRoomResponseDto>>>> GetRoomsByFilter(RoomFilterRequestDto filterDto)
+        public async Task<ResponseDto<PaginatedListResponseDto<GetRoomResponseDto>>> GetRoomsByFilter(RoomFilterRequestDto filterDto)
         {
+            var validator = _roomFilterValidator.Validate(filterDto);
+            if (!validator.IsValid)
+                return ResponseDto<PaginatedListResponseDto<GetRoomResponseDto>>.ValidationFail(validator);
             var query = await _roomRepository.GetAll(r =>
                 (!filterDto.RoomTypeId.HasValue || r.RoomTypeId == filterDto.RoomTypeId) &&
                 (!filterDto.MinPrice.HasValue || r.PricePerNight >= filterDto.MinPrice) &&
@@ -106,12 +126,12 @@ namespace Application.Services
                 (!filterDto.IsAvailable.HasValue || r.IsAvailable == filterDto.IsAvailable)
             );
             var projectedQuery = query.ProjectTo<GetRoomResponseDto>(_mapper.ConfigurationProvider);
-            var paginatedRooms = await PaginatedListResponseDto<IEnumerable<GetRoomResponseDto>>.CreateAsync(
-                (IQueryable<IEnumerable<GetRoomResponseDto>>)projectedQuery,
+            var paginatedRooms = await PaginatedListResponseDto<GetRoomResponseDto>.CreateAsync(
+                projectedQuery,
                 filterDto.PageNumber,
                 filterDto.PageSize
             );
-            var response = ResponseDto<PaginatedListResponseDto<IEnumerable<GetRoomResponseDto>>>.Success(paginatedRooms);
+            var response = ResponseDto<PaginatedListResponseDto<GetRoomResponseDto>>.Success(paginatedRooms);
             return response;
 
         }

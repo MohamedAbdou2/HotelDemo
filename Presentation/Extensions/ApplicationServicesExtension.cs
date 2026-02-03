@@ -1,12 +1,9 @@
 ﻿using Application;
 using Application.Interfaces;
-using Application.Services;
 using Application.Services.OfferServices;
 using Application.Validator;
-using AutoMapper;
 using Domain.Repositories;
 using FluentValidation;
-using FluentValidation.AspNetCore;
 using HotelDemo.Helper;
 using HotelDemo.Persistence;
 using HotelDemo.ValidationFilters;
@@ -15,7 +12,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using System.Reflection;
 using System.Text;
 using System.Text.Json.Serialization;
 
@@ -24,7 +20,7 @@ namespace Presentation.Extensions
     public static class ApplicationServicesExtension
     {
         public static void AddApplicationServices(this IServiceCollection services, IConfiguration configuration)
-        {// Add services to the container.
+        {
 
             services.AddControllers(options =>
             {
@@ -46,11 +42,11 @@ namespace Presentation.Extensions
                 options.UseSqlServer(connectionString));
 
             services.AddHttpContextAccessor();
-            services.AddFluentValidationAutoValidation();
             services.AddValidatorsFromAssemblies(new[]
             {
                  typeof(Program).Assembly,
-                 typeof(IApplicationMarker).Assembly
+                 typeof(IApplicationMarker).Assembly,
+                 typeof(IPresentationMarker).Assembly
             });
 
             services.Configure<JwtSettings>(configuration.GetSection("Jwt"));
@@ -75,15 +71,17 @@ namespace Presentation.Extensions
 
             });
             services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
-            services.AddScoped(typeof(IReadOnlyRepository<>),typeof(ReadOnlyRepository<>));
+            services.AddScoped(typeof(IReadOnlyRepository<>), typeof(ReadOnlyRepository<>));
 
             services.AddScoped<IOffers, OfferService>();
 
             services.AddApplication();
-             //services.AddScoped<IOfferRepository, OfferRepository>();
-            // AutoMapper - scans assembly for all Profile classes
-            //services.AddAutoMapper(typeof(Profile).Assembly);
 
+            services.AddAutoMapper(
+            typeof(IApplicationMarker).Assembly,
+            typeof(IPresentationMarker).Assembly
+            );
+           
         }
     }
 }
