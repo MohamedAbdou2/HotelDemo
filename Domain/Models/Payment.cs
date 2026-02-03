@@ -42,6 +42,13 @@ namespace Domain.Models
         [Column(TypeName = "nvarchar(max)")]
         public string? GatewayResponse { get; set; }
 
+        /// <summary>
+        /// Payment URL from gateway (e.g., Stripe Checkout URL)
+        /// Customer uses this URL to complete payment
+        /// </summary>
+        [MaxLength(500)]
+        public string? PaymentUrl { get; set; }
+
         // ==================== Security & Tracking ====================
 
         /// <summary>

@@ -18,19 +18,12 @@ namespace Presentation.Controllers
             _paymentService = paymentService;
         }
 
-        /// <summary>
-        /// Initiate payment for a reservation
-        /// POST: api/payment/initiate
-        /// </summary>
         [HttpPost("initiate")]
         public async Task<ActionResult<ResponseDto<PaymentResponseDto>>> InitiatePayment(
             [FromBody] InitiatePaymentRequestDto request)
         {
             var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
-            var result = await _paymentService.InitiatePaymentAsync(
-                request.ReservationId,
-                request.CustomerId,
-                ipAddress);
+            var result = await _paymentService.InitiatePaymentAsync(request.ReservationId, ipAddress);
 
             if (!result.IsSuccess)
                 return BadRequest(result);
@@ -38,10 +31,6 @@ namespace Presentation.Controllers
             return Ok(result);
         }
 
-        /// <summary>
-        /// Verify payment status
-        /// POST: api/payment/verify
-        /// </summary>
         [HttpPost("verify")]
         public async Task<ActionResult<ResponseDto<PaymentResponseDto>>> VerifyPayment(
             [FromQuery] Guid paymentId,
@@ -55,10 +44,6 @@ namespace Presentation.Controllers
             return Ok(result);
         }
 
-        /// <summary>
-        /// Handle payment gateway webhook
-        /// POST: api/payment/webhook
-        /// </summary>
         [HttpPost("webhook")]
         [AllowAnonymous]
         public async Task<ActionResult<ResponseDto<string>>> HandleWebhook([FromBody] string webhookData)
@@ -71,10 +56,6 @@ namespace Presentation.Controllers
             return Ok(result);
         }
 
-        /// <summary>
-        /// Get payment history for a reservation
-        /// GET: api/payment/history/{reservationId}
-        /// </summary>
         [HttpGet("history/{reservationId}")]
         public async Task<ActionResult<ResponseDto<List<PaymentResponseDto>>>> GetPaymentHistory(Guid reservationId)
         {
@@ -86,10 +67,6 @@ namespace Presentation.Controllers
             return Ok(result);
         }
 
-        /// <summary>
-        /// Refund a payment
-        /// POST: api/payment/refund
-        /// </summary>
         [HttpPost("refund")]
         public async Task<ActionResult<ResponseDto<PaymentResponseDto>>> RefundPayment(
             [FromQuery] Guid paymentId,

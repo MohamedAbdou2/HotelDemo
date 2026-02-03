@@ -18,6 +18,11 @@ namespace Application.Dtos.Payment
         public string? TransactionId { get; set; }
         public string? GatewayResponse { get; set; }
 
+        /// <summary>
+        /// Payment URL where customer can complete the payment
+        /// </summary>
+        public string? PaymentUrl { get; set; }
+
         public DateTime? CompletedAt { get; set; }
         public DateTime? FailedAt { get; set; }
         public DateTime? RefundedAt { get; set; }

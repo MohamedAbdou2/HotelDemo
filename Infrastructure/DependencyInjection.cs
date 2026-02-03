@@ -1,5 +1,7 @@
+using Application.Interfaces;
 using Domain.Repositories;
 using Infrastructure.Repositories;
+using Infrastructure.Services;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Infrastructure
@@ -10,6 +12,9 @@ namespace Infrastructure
         {
             services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
             services.AddScoped(typeof(IReadOnlyRepository<>), typeof(ReadOnlyRepository<>));
+
+            // Add Stripe Payment Service
+            services.AddScoped<IStripePaymentService, StripePaymentService>();
 
             return services;
         }
