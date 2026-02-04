@@ -56,7 +56,8 @@ namespace Application.Services.PaymentServices
             {
                 Id = Guid.NewGuid(),
                 ReservationId = reservationId,
-                CustomerId = currentUserId.Value,
+                CustomerId = reservation.CustomerId,
+                CreatedById = reservation.CreatedById,
                 Amount = reservation.TotalPrice,
                 PaymentMethodId = PaymentMethodCode.Stripe,
                 PaymentStatusId = PaymentStatusCode.Pending,
@@ -73,7 +74,7 @@ namespace Application.Services.PaymentServices
             return ResponseDto<PaymentResponseDto>.Success(paymentDto, "Payment initiated successfully");
         }
 
-        public async Task<ResponseDto<PaymentResponseDto>> VerifyPaymentAsync(Guid paymentId, string transactionId)
+        public async Task<ResponseDto<PaymentResponseDto>> HandleStripeSuccessAsync(Guid paymentId)
         {
             var paymentQuery = await _paymentRepository.GetbyId(paymentId);
             var payment = paymentQuery.FirstOrDefault();
@@ -81,11 +82,22 @@ namespace Application.Services.PaymentServices
             if (payment == null)
                 return ResponseDto<PaymentResponseDto>.Fail(ErrorCode.NotFound, "Payment not found");
 
-            payment.TransactionId = transactionId;
+            if (payment.PaymentStatusId == PaymentStatusCode.Paid)
+                return ResponseDto<PaymentResponseDto>.Fail(ErrorCode.BadRequest, "Payment already processed");
+
+            // Get session status from Stripe
+            var (isSuccessful, sessionId, paymentIntentId) = await _stripeService.GetSessionStatusAsync(paymentId);
+
+            if (!isSuccessful)
+                return ResponseDto<PaymentResponseDto>.Fail(ErrorCode.BadRequest, "Payment not completed on Stripe");
+
+            // Update payment status
+            payment.TransactionId = paymentIntentId;
             payment.PaymentStatusId = PaymentStatusCode.Paid;
             payment.CompletedAt = DateTime.UtcNow;
-            payment.WebhookVerified = true;
+            payment.GatewayResponse = $"{{\"session_id\": \"{sessionId}\", \"payment_intent_id\": \"{paymentIntentId}\"}}";
 
+            // Update reservation status
             var reservationQuery = await _reservationRepository.GetbyId(payment.ReservationId);
             var reservation = reservationQuery.FirstOrDefault();
 
@@ -99,54 +111,63 @@ namespace Application.Services.PaymentServices
             await _paymentRepository.Update(payment);
 
             var paymentDto = _mapper.Map<PaymentResponseDto>(payment);
-            return ResponseDto<PaymentResponseDto>.Success(paymentDto, "Payment verified successfully");
+            return ResponseDto<PaymentResponseDto>.Success(paymentDto, "Payment verified and confirmed successfully");
         }
 
-        public async Task<ResponseDto<string>> HandleWebhookAsync(string webhookData)
+        public async Task<ResponseDto<string>> HandleStripeCancelAsync(Guid paymentId)
         {
-            var webhookJson = JsonSerializer.Deserialize<JsonElement>(webhookData);
-
-            if (!webhookJson.TryGetProperty("transaction_id", out var transactionIdElement) ||
-                !webhookJson.TryGetProperty("success", out var successElement))
-                return ResponseDto<string>.Fail(ErrorCode.BadRequest, "Invalid webhook data");
-
-            var transactionId = transactionIdElement.GetString();
-            var isSuccess = successElement.GetBoolean();
-
-            var paymentsQuery = await _paymentRepository.GetAll(p => p.TransactionId == transactionId);
-            var payment = paymentsQuery.FirstOrDefault();
+            var paymentQuery = await _paymentRepository.GetbyId(paymentId);
+            var payment = paymentQuery.FirstOrDefault();
 
             if (payment == null)
                 return ResponseDto<string>.Fail(ErrorCode.NotFound, "Payment not found");
 
-            if (isSuccess)
-            {
-                payment.PaymentStatusId = PaymentStatusCode.Paid;
-                payment.CompletedAt = DateTime.UtcNow;
+            if (payment.PaymentStatusId != PaymentStatusCode.Pending)
+                return ResponseDto<string>.Success("Payment already processed");
 
-                var reservationQuery = await _reservationRepository.GetbyId(payment.ReservationId);
-                var reservation = reservationQuery.FirstOrDefault();
-
-                if (reservation != null)
-                {
-                    reservation.ReservationStatusId = ReservationStatusCode.Confirmed;
-                    reservation.ConfirmedAt = DateTime.UtcNow;
-                    await _reservationRepository.Update(reservation);
-                }
-            }
-            else
-            {
-                payment.PaymentStatusId = PaymentStatusCode.Failed;
-                payment.FailedAt = DateTime.UtcNow;
-                payment.FailureReason = webhookJson.TryGetProperty("error_message", out var errorMsg)
-                    ? errorMsg.GetString()
-                    : "Payment failed";
-            }
-
-            payment.WebhookVerified = true;
-            payment.GatewayResponse = webhookData;
+            payment.PaymentStatusId = PaymentStatusCode.Failed;
+            payment.FailedAt = DateTime.UtcNow;
+            payment.FailureReason = "Payment cancelled by user";
 
             await _paymentRepository.Update(payment);
+
+            return ResponseDto<string>.Success("Payment cancelled");
+        }
+
+        public async Task<ResponseDto<string>> HandleStripeWebhookAsync(string json, string stripeSignature)
+        {
+            // Delegate to Stripe service to parse and validate the webhook
+            var webhookResult = await _stripeService.ProcessWebhookAsync(json, stripeSignature);
+
+            if (!webhookResult.isValid)
+                return ResponseDto<string>.Fail(ErrorCode.BadRequest, "Invalid webhook signature");
+
+            if (webhookResult.eventType == "checkout.session.completed" && webhookResult.paymentId.HasValue)
+            {
+                var paymentQuery = await _paymentRepository.GetbyId(webhookResult.paymentId.Value);
+                var payment = paymentQuery.FirstOrDefault();
+
+                if (payment != null && payment.PaymentStatusId == PaymentStatusCode.Pending)
+                {
+                    payment.TransactionId = webhookResult.paymentIntentId;
+                    payment.PaymentStatusId = PaymentStatusCode.Paid;
+                    payment.CompletedAt = DateTime.UtcNow;
+                    payment.WebhookVerified = true;
+                    payment.GatewayResponse = json;
+
+                    var reservationQuery = await _reservationRepository.GetbyId(payment.ReservationId);
+                    var reservation = reservationQuery.FirstOrDefault();
+
+                    if (reservation != null)
+                    {
+                        reservation.ReservationStatusId = ReservationStatusCode.Confirmed;
+                        reservation.ConfirmedAt = DateTime.UtcNow;
+                        await _reservationRepository.Update(reservation);
+                    }
+
+                    await _paymentRepository.Update(payment);
+                }
+            }
 
             return ResponseDto<string>.Success("Webhook processed successfully");
         }

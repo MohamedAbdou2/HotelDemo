@@ -1,4 +1,5 @@
 ﻿using Application.Dtos.Reservation;
+using Application.Helper;
 using Application.Interfaces;
 using AutoMapper;
 using HotelDemo.ViewModels;
@@ -18,33 +19,30 @@ namespace Presentation.Controllers
     [Authorize]
     public class ReservationController : ControllerBase
     {
-        private readonly IReservationServices _reservationService;
+        private readonly IReservationService _reservationService;
         private readonly LinkGenerator _linkGenerator;
         private readonly IMapper _mapper;
+        private readonly CurrentUser _currentUser;
 
         public ReservationController(
-            IReservationServices reservationService,
+            IReservationService reservationService,
             LinkGenerator linkGenerator,
-            IMapper mapper)
+            IMapper mapper,
+            CurrentUser currentUser)
         {
             _reservationService = reservationService;
             _linkGenerator = linkGenerator;
             _mapper = mapper;
+            _currentUser = currentUser;
         }
 
-        /// <summary>
-        /// Create a new reservation
-        /// </summary>
+
         [HttpPost]
-        [ProducesResponseType(typeof(ResponseViewModel<ReservationResponseViewModel>), 201)]
-        [ProducesResponseType(typeof(ResponseViewModel<ReservationResponseViewModel>), 400)]
         public async Task<ResponseViewModel<ReservationResponseViewModel>> CreateReservation(
             [FromBody] CreateReservationViewModel model)
         {
-            // 1. Map ViewModel to DTO (same as UserController)
             var dto = _mapper.Map<ReservationDto>(model);
-
-            // 2. Call service (same as UserController)
+            dto.CreatedById = _currentUser.GetUserId().Value; 
             var serviceResult = await _reservationService.CreateReservation(dto);
 
             if (!serviceResult.IsSuccess)
@@ -52,7 +50,6 @@ namespace Presentation.Controllers
                     serviceResult.ErrorCode,
                     serviceResult.Message);
 
-            // 3. Generate URLs with LinkGenerator ✨
             var locationUrl = _linkGenerator.GetUriByAction(
                 HttpContext,
                 action: nameof(GetReservationById),
@@ -64,7 +61,6 @@ namespace Presentation.Controllers
                 controller: "Payment",
                 values: new { reservationId = serviceResult.Data.Id }) ?? string.Empty;
 
-            // 4. Map DTO to ViewModel (same as UserController)
             var viewModel = _mapper.Map<ReservationResponseViewModel>(serviceResult.Data);
             viewModel.GetDetailsUrl = locationUrl ?? string.Empty;
 
@@ -78,12 +74,8 @@ namespace Presentation.Controllers
                 serviceResult.Message);
         }
 
-        /// <summary>
-        /// Get reservation by ID
-        /// </summary>
+  
         [HttpGet("{id}")]
-        [ProducesResponseType(typeof(ResponseViewModel<ReservationResponseViewModel>), 200)]
-        [ProducesResponseType(typeof(ResponseViewModel<ReservationResponseViewModel>), 404)]
         public async Task<ResponseViewModel<ReservationResponseViewModel>> GetReservationById(Guid id)
         {
             // 1. Call service (same as UserController)
@@ -94,7 +86,7 @@ namespace Presentation.Controllers
                     serviceResult.ErrorCode,
                     serviceResult.Message);
 
-            // 2. Generate URLs with LinkGenerator ✨
+            // 2. Generate URLs with LinkGenerator 
             serviceResult.Data!.PaymentUrl = _linkGenerator.GetUriByAction(
                 HttpContext,
                 action: "InitiatePayment",

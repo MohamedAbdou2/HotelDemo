@@ -21,7 +21,7 @@ namespace Infrastructure.BackgroundServices
 
         public void ScheduleReservationCancellation(Guid reservationId, TimeSpan delay)
         {
-            _jobClient.Schedule<IReservationServices>(
+            _jobClient.Schedule<IReservationService>(
                 service => service.CheckAndCancelReservation(reservationId),
                 delay);
         }

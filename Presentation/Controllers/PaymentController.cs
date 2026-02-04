@@ -31,29 +31,39 @@ namespace Presentation.Controllers
             return Ok(result);
         }
 
-        [HttpPost("verify")]
-        public async Task<ActionResult<ResponseDto<PaymentResponseDto>>> VerifyPayment(
-            [FromQuery] Guid paymentId,
-            [FromQuery] string transactionId)
+        [HttpGet("success")]
+        [AllowAnonymous]
+        public async Task<ActionResult> PaymentSuccess([FromQuery] Guid paymentId)
         {
-            var result = await _paymentService.VerifyPaymentAsync(paymentId, transactionId);
+            var result = await _paymentService.HandleStripeSuccessAsync(paymentId);
 
             if (!result.IsSuccess)
-                return BadRequest(result);
+                return Redirect($"/payment-failed?error={result.Message}");
 
-            return Ok(result);
+            return Redirect($"/payment-success?paymentId={paymentId}");
+        }
+
+        [HttpGet("cancel")]
+        [AllowAnonymous]
+        public async Task<ActionResult> PaymentCancel([FromQuery] Guid paymentId)
+        {
+            await _paymentService.HandleStripeCancelAsync(paymentId);
+            return Redirect($"/payment-cancelled?paymentId={paymentId}");
         }
 
         [HttpPost("webhook")]
         [AllowAnonymous]
-        public async Task<ActionResult<ResponseDto<string>>> HandleWebhook([FromBody] string webhookData)
+        public async Task<ActionResult> HandleStripeWebhook()
         {
-            var result = await _paymentService.HandleWebhookAsync(webhookData);
+            var json = await new StreamReader(HttpContext.Request.Body).ReadToEndAsync();
+            var stripeSignature = Request.Headers["Stripe-Signature"].ToString();
+
+            var result = await _paymentService.HandleStripeWebhookAsync(json, stripeSignature);
 
             if (!result.IsSuccess)
-                return BadRequest(result);
+                return BadRequest();
 
-            return Ok(result);
+            return Ok();
         }
 
         [HttpGet("history/{reservationId}")]

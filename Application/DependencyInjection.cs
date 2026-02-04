@@ -22,7 +22,7 @@ namespace Application
             services.AddScoped<IOffers, OfferService>();
             services.AddScoped<IPaymentService, PaymentService>();
             services.AddScoped<IRefundService, RefundService>();
-            services.AddScoped<IReservationServices, RerservationServices>();
+            services.AddScoped<IReservationService, RerservationService>();
             services.AddAutoMapper(cfg =>
             {
             }, Assembly.GetExecutingAssembly());

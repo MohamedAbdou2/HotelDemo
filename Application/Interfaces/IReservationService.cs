@@ -3,7 +3,7 @@ using Application.Dtos.Reservation;
 
 namespace Application.Interfaces
 {
-    public interface IReservationServices
+    public interface IReservationService
     {
         Task<ResponseDto<ReservationResponseDto>> CreateReservation(ReservationDto reservationDto);
         Task<ResponseDto<ReservationResponseDto>> GetReservationById(Guid reservationId);

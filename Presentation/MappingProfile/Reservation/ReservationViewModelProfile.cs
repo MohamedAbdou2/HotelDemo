@@ -34,10 +34,9 @@ namespace Presentation.MappingProfile.Reservation
             if (remaining.TotalMinutes < 1)
                 return $"{(int)remaining.TotalSeconds} seconds";
 
-            if (remaining.TotalHours < 1)
-                return $"{(int)remaining.TotalMinutes} minutes";
+        
 
-            return $"{(int)remaining.TotalHours} hours, {remaining.Minutes} minutes";
+            return $" {remaining.Minutes} minutes";
         }
     }
 }

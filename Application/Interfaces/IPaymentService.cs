@@ -6,8 +6,9 @@ namespace Application.Interfaces
     public interface IPaymentService
     {
         Task<ResponseDto<PaymentResponseDto>> InitiatePaymentAsync(Guid reservationId, string? ipAddress = null);
-        Task<ResponseDto<PaymentResponseDto>> VerifyPaymentAsync(Guid paymentId, string transactionId);
-        Task<ResponseDto<string>> HandleWebhookAsync(string webhookData);
+        Task<ResponseDto<PaymentResponseDto>> HandleStripeSuccessAsync(Guid paymentId);
+        Task<ResponseDto<string>> HandleStripeCancelAsync(Guid paymentId);
+        Task<ResponseDto<string>> HandleStripeWebhookAsync(string json, string stripeSignature);
         Task<ResponseDto<List<PaymentResponseDto>>> GetPaymentHistoryAsync(Guid reservationId);
         Task<ResponseDto<PaymentResponseDto>> RefundPaymentAsync(Guid paymentId, string refundReason);
     }
