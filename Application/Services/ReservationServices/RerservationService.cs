@@ -19,14 +19,15 @@ namespace Application.Services.ReservationServices
         private readonly IGenericRepository<Payment> _paymentRepository;
         private readonly IMapper _mapper;
         private readonly IValidator<ReservationDto> _reservationValidator;
-        private readonly IBackgroundJobService _backgroundJobService;   
-
+        private readonly IBackgroundJobService _backgroundJobService;
+        private readonly IReadOnlyRepository<RoomOffer> _roomOffersRepository;
         public RerservationService(IGenericRepository<Room> roomRepository,
             IGenericRepository<Reservation> reservationRepository,
             IGenericRepository<Payment> paymentRepository,
             IMapper mapper,
             IValidator<ReservationDto> reservationValidator,
-            IBackgroundJobService backgroundJobService)
+            IBackgroundJobService backgroundJobService,
+            IReadOnlyRepository<RoomOffer> roomOffersRepository)
         {
 
             _roomRepository = roomRepository;
@@ -35,6 +36,7 @@ namespace Application.Services.ReservationServices
             _mapper = mapper;
             _reservationValidator = reservationValidator;
             _backgroundJobService = backgroundJobService;
+            _roomOffersRepository = roomOffersRepository;
         }
 
         public async Task<ResponseDto<ReservationResponseDto>> CreateReservation(ReservationDto reservationDto)
@@ -47,52 +49,74 @@ namespace Application.Services.ReservationServices
             return await retryPolicy.ExecuteAsync(async () =>
             {
                 var validationResult = _reservationValidator.Validate(reservationDto);
-            if (!validationResult.IsValid)
-            {
-                return ResponseDto<ReservationResponseDto>.ValidaitonFail(validationResult);
-            }
+                if (!validationResult.IsValid)
+                {
+                    return ResponseDto<ReservationResponseDto>.ValidaitonFail(validationResult);
+                }
 
-            var isAvailable = await IsRoomAvailable(reservationDto.RoomId, reservationDto.CheckInDate, reservationDto.CheckOutDate);
-            if (!isAvailable)
-            {
-                return ResponseDto<ReservationResponseDto>.Fail(ErrorCode.RoomNotAvailable,
-                    "The room is already booked for the selected period.");
-            }
+                var isAvailable = await IsRoomAvailable(reservationDto.RoomId, reservationDto.CheckInDate, reservationDto.CheckOutDate);
+                if (!isAvailable)
+                {
+                    return ResponseDto<ReservationResponseDto>.Fail(ErrorCode.RoomNotAvailable,
+                        "The room is already booked for the selected period.");
+                }
 
-            var roomQuery = await _roomRepository.GetbyId(reservationDto.RoomId);
-            var room = roomQuery.FirstOrDefault();
-            if (room == null || !room.IsAvailable)
-            {
-                return ResponseDto<ReservationResponseDto>.Fail(ErrorCode.RoomNotFound,
-                    "The room is currently not available for booking.");
-            }
+                var roomQuery = await _roomRepository.GetbyId(reservationDto.RoomId);
+                var room = roomQuery.FirstOrDefault();
+                if (room == null || !room.IsAvailable)
+                {
+                    return ResponseDto<ReservationResponseDto>.Fail(ErrorCode.RoomNotFound,
+                        "The room is currently not available for booking.");
+                }
 
-            var reservation = _mapper.Map<Reservation>(reservationDto);
-            reservation.ExpiresAt = DateTime.UtcNow.AddMinutes(10);
-            reservation.ReservationStatusId = ReservationStatusCode.Pending;
+                var reservation = _mapper.Map<Reservation>(reservationDto);
+                reservation.ExpiresAt = DateTime.UtcNow.AddMinutes(10);
+                reservation.ReservationStatusId = ReservationStatusCode.Pending;
+                var discount = await checkAnGetDiscountOffer(reservationDto.RoomId, reservationDto.CheckInDate);
+                if (discount > 0)
+                {
+                    reservation.Discount = discount;
+                    reservation.TotalPrice = room.PricePerNight * (1 - discount / 100) * (decimal)(reservationDto.CheckOutDate - reservationDto.CheckInDate).TotalDays;
+                }
+                else
+                {
+                    reservation.TotalPrice = room.PricePerNight * (decimal)(reservationDto.CheckOutDate - reservationDto.CheckInDate).TotalDays;
+                }
+                await _reservationRepository.Add(reservation);
 
-            await _reservationRepository.Add(reservation);
+                room.IsAvailable = false;
+                await _roomRepository.UpdateIncludeAsync(room, x => x.IsAvailable);
 
-            room.IsAvailable = false;
-            await _roomRepository.UpdateIncludeAsync(room , x=>x.IsAvailable);
+                _backgroundJobService.ScheduleReservationCancellation(reservation.Id, TimeSpan.FromMinutes(10));
 
-            _backgroundJobService.ScheduleReservationCancellation(reservation.Id, TimeSpan.FromMinutes(10));
-
-            var response = _mapper.Map<ReservationResponseDto>(reservation);
-            response.RoomNumber = room.RoomNumber;
-            response.Status = reservation.ReservationStatusId.ToString();
+                var response = _mapper.Map<ReservationResponseDto>(reservation);
+                response.RoomNumber = room.RoomNumber;
+                response.Status = reservation.ReservationStatusId.ToString();
 
                 return ResponseDto<ReservationResponseDto>.Success(response,
                     "Reservation created successfully! Please complete the payment within 10 minutes.");
             });
         }
-    
+
         private async Task<bool> RoomAvailableAsync(Guid roomId)
         {
             var room = await _roomRepository.GetbyId(roomId);
             return room.Any(r => r.IsAvailable == true);
         }
+        private async Task<decimal> checkAnGetDiscountOffer(Guid roomId, DateTime checkInDate)
+        {
+            var roomOfferQuery = await _roomOffersRepository.GetAll(ro => ro.RoomId == roomId);
+            var roomOffer = await roomOfferQuery.Include(x => x.Offer).FirstOrDefaultAsync();
+            if (roomOffer == null ||
+                !roomOffer.Offer.IsActive ||
+                !(roomOffer.Offer.StartDate <= checkInDate) ||
+                !(roomOffer.Offer.EndDate >= checkInDate))
+            {
+                return 0;
+            }
+            return roomOffer.Offer.DiscountPercentage;
 
+        }
 
         public async Task<bool> IsRoomAvailable(Guid roomId, DateTime checkIn, DateTime checkOut)
         {
@@ -104,7 +128,7 @@ namespace Application.Services.ReservationServices
                               checkOut > r.CheckInDate);
         }
 
-      
+
 
         public async Task CheckAndCancelReservation(Guid reservationId)
         {
@@ -145,7 +169,7 @@ namespace Application.Services.ReservationServices
         }
 
 
-   }
+    }
 
 
 

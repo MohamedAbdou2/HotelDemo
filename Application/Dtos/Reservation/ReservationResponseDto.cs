@@ -12,6 +12,7 @@ namespace Application.Dtos.Reservation
         public DateTime CheckInDate { get; set; }
         public DateTime CheckOutDate { get; set; }
         public decimal TotalPrice { get; set; }
+        public decimal Discount { get; set; }
         public ReservationStatusCode ReservationStatusId { get; set; }
         public string Status { get; set; } = string.Empty;
         public DateTime? ExpiresAt { get; set; }

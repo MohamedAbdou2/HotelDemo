@@ -76,18 +76,5 @@ namespace Presentation.Controllers
 
             return Ok(result);
         }
-
-        [HttpPost("refund")]
-        public async Task<ActionResult<ResponseDto<PaymentResponseDto>>> RefundPayment(
-            [FromQuery] Guid paymentId,
-            [FromQuery] string refundReason)
-        {
-            var result = await _paymentService.RefundPaymentAsync(paymentId, refundReason);
-
-            if (!result.IsSuccess)
-                return BadRequest(result);
-
-            return Ok(result);
-        }
     }
 }

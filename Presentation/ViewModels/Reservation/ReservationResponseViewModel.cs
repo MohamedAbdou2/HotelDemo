@@ -14,6 +14,7 @@ namespace Presentation.ViewModels.Reservation
         public DateTime CheckOutDate { get; set; }
         public int NumberOfNights { get; set; }
         public decimal TotalPrice { get; set; }
+        public decimal Discount { get; set; }
         public int StatusCode { get; set; }
         public string Status { get; set; } = string.Empty;
         public DateTime? ExpiresAt { get; set; }

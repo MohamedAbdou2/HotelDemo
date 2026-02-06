@@ -10,6 +10,5 @@ namespace Application.Interfaces
         Task<ResponseDto<string>> HandleStripeCancelAsync(Guid paymentId);
         Task<ResponseDto<string>> HandleStripeWebhookAsync(string json, string stripeSignature);
         Task<ResponseDto<List<PaymentResponseDto>>> GetPaymentHistoryAsync(Guid reservationId);
-        Task<ResponseDto<PaymentResponseDto>> RefundPaymentAsync(Guid paymentId, string refundReason);
     }
 }

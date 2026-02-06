@@ -107,21 +107,5 @@ namespace Infrastructure.Services
                 return Task.FromResult<(bool, string?, Guid?, string?)>((false, null, null, null));
             }
         }
-
-        public async Task<bool> ProcessRefundAsync(string paymentIntentId, decimal? amount = null)
-        {
-            var options = new RefundCreateOptions
-            {
-                PaymentIntent = paymentIntentId
-            };
-
-            if (amount.HasValue)
-                options.Amount = (long)(amount.Value * 100);
-
-            var service = new RefundService();
-            var refund = await service.CreateAsync(options);
-
-            return refund.Status == "succeeded";
-        }
     }
 }

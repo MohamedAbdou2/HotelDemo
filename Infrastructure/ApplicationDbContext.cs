@@ -34,7 +34,7 @@ namespace HotelDemo.Persistence
         public DbSet<Report> Reports { get; set; }
         public DbSet<RoomType> RoomTypes { get; set; }
         public DbSet<PaymentMethod> PaymentMethods { get; set; }
-        public DbSet<PaymentStatus> PaymentStatuses { get; set; }
+        public DbSet<PaymentStatus> PaymentStatus { get; set; }
         public DbSet<Facility> Facilities { get; set; }
         public DbSet<ReportType> ReportTypes { get; set; }
         public DbSet<ReportPeriod> ReportPeriods { get; set; }

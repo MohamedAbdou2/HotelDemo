@@ -13,7 +13,7 @@ namespace Domain.Models
         public DateTime CheckInDate { get; set; }
         public DateTime CheckOutDate { get; set; }
         public decimal TotalPrice { get; set; }
-
+        public decimal? Discount { get; set; }   
         public ReservationStatusCode ReservationStatusId { get; set; }
         public ReservationStatus ReservationStatus { get; set; } = null!;
 
@@ -46,11 +46,6 @@ namespace Domain.Models
         
         public virtual ReservationCancellation? Cancellation { get; set; }
 
-        // ==================== Special Requests ====================
-
-        [MaxLength(1000)]
-        public string? SpecialRequests { get; set; }
-
         // ==================== Concurrency Control ====================
 
         /// <summary>
@@ -60,23 +55,6 @@ namespace Domain.Models
         [Timestamp]
         public byte[] RowVersion { get; set; }
 
-        // ==================== Computed Properties ====================
-
-        [NotMapped]
-        public int TotalNights => (CheckOutDate.Date - CheckInDate.Date).Days;
-
-        [NotMapped]
-        public bool IsExpired => ExpiresAt.HasValue && ExpiresAt.Value < DateTime.UtcNow;
-
-
-        [NotMapped]
-        public TimeSpan? TimeRemaining => ExpiresAt.HasValue
-            ? ExpiresAt.Value - DateTime.UtcNow
-            : null;
-
-        [NotMapped]
-        
-        public bool IsPaid => Payments.Any(p => p.PaymentStatusId == PaymentStatusCode.Paid);
 
     }
 

@@ -181,11 +181,6 @@ namespace Application.Services.PaymentServices
             return ResponseDto<List<PaymentResponseDto>>.Success(paymentDtos);
         }
 
-        [Obsolete("Use RefundService.InitiateRefundAsync instead")]
-        public async Task<ResponseDto<PaymentResponseDto>> RefundPaymentAsync(Guid paymentId, string refundReason)
-        {
-            return ResponseDto<PaymentResponseDto>.Fail(ErrorCode.BadRequest, 
-                "This method is deprecated. Use /api/refund/initiate endpoint instead");
-        }
+       
     }
 }

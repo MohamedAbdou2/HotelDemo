@@ -21,7 +21,7 @@ namespace Application
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IOffers, OfferService>();
             services.AddScoped<IPaymentService, PaymentService>();
-            services.AddScoped<IRefundService, RefundService>();
+         
             services.AddScoped<IReservationService, RerservationService>();
             services.AddAutoMapper(cfg =>
             {
