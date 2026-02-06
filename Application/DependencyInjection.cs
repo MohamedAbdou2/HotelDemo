@@ -1,6 +1,7 @@
 ﻿using Application.Dtos.User;
 using Application.Interfaces;
 using Application.Services;
+using Application.Services.FacilityServices;
 using Application.Services.OfferServices;
 using Application.Validator;
 using FluentValidation;
@@ -14,10 +15,10 @@ namespace Application
         public static IServiceCollection AddApplication(this IServiceCollection services)
         {
 
-
             services.AddScoped<IRoomService, RoomService>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IOffers, OfferService>();
+            services.AddScoped<IFacilityService, FacilityService>();
 
             services.AddAutoMapper(cfg =>
             {

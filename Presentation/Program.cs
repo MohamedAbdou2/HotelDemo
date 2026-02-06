@@ -1,6 +1,10 @@
+using Application.Interfaces;
+using Application.Services.FacilityServices;
+using Domain.Repositories;
 using HotelDemo.Middlewares;
 using Infrastructure;
 using Infrastructure.DataSeeding;
+using Infrastructure.Repositories;
 using Microsoft.OpenApi.Models;
 using Presentation.Extensions;
 
@@ -13,6 +17,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddTransient<ExceptionHandlingMiddleware>();
 builder.Services.AddTransient<TransactionMiddleWare>();
+
 
 builder.Services.AddSwaggerGen(c =>
 {

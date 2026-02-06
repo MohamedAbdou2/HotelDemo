@@ -4,7 +4,7 @@ using System.Linq.Expressions;
 namespace Domain.Repositories
 {
     public interface IGenericRepository<T> where T : BaseModel
-    {
+    {   
         Task<bool> Add(T entity);
 
         Task<IQueryable<T>> GetAll(Expression<Func<T, bool>>? creiteria = null);

@@ -1,27 +1,20 @@
-﻿using Application.Helper;
+﻿using Application;
+using Application.Helper;
 using Application.Interfaces;
-using Application.Services.OfferServices;
-using Application.Validator;
+using Application.Services.FacilityServices;
 using Domain.Repositories;
 using FluentValidation;
-using HotelDemo.Helper;
 using HotelDemo.Persistence;
 using HotelDemo.ValidationFilters;
+using Infrastructure;
 using Infrastructure.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using System.Reflection;
 using System.Text;
 using System.Text.Json.Serialization;
-using Application;
-using Infrastructure;
-using AutoMapper;
-using Presentation.MappingProfiles.User;
-using Application.Dtos.User;
-using Presentation.ViewModels.User;
-using Presentation.Validator;
-using System.Reflection;
 
 namespace Presentation.Extensions
 {
@@ -29,6 +22,10 @@ namespace Presentation.Extensions
     {
         public static void AddApplicationServices(this IServiceCollection services, IConfiguration configuration)
         {// Add services to the container.
+
+            services.AddScoped<IFacilityRepository, FacilityRepository>();
+
+
 
             services.AddControllers(options =>
             {
@@ -95,6 +92,8 @@ namespace Presentation.Extensions
             }, Assembly.GetExecutingAssembly());
             services.AddValidatorsFromAssembly(typeof(Program).Assembly);
             services.AddScoped<CurrentUser>();
+            
+            //services.AddScoped<IFacilityRepository, FacilityRepository>();
         }
     }
 }
