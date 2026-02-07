@@ -10,8 +10,5 @@ public class FacilityDtoProfile : Profile
         CreateMap<Domain.Models.Facility, FacilityResponseDto>()
             .ForMember(dest => dest.FacilityId,opt => opt.MapFrom(src => src.Id));
 
-        CreateMap<CreateFacilityDto, Domain.Models.Facility>();
-
-        CreateMap<UpdateFacilityDto, Domain.Models.Facility>();
     }
 }

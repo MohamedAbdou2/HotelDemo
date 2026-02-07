@@ -13,9 +13,7 @@ public class FacilityViewModelProfile : Profile
         CreateMap<ResponseDto<FacilityResponseDto>, ResponseViewModel<FacilityResponseViewModel>>();
         CreateMap<FacilityResponseDto, FacilityResponseViewModel>();
 
-        CreateMap<CreateFacilityViewModel, CreateFacilityDto>();
         CreateMap<ResponseDto<bool>, ResponseViewModel<bool>>();
 
-        CreateMap<UpdateFacilityViewModel, UpdateFacilityDto>();
     }
 }

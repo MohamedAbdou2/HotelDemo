@@ -23,9 +23,6 @@ namespace Presentation.Extensions
         public static void AddApplicationServices(this IServiceCollection services, IConfiguration configuration)
         {// Add services to the container.
 
-            services.AddScoped<IFacilityRepository, FacilityRepository>();
-
-
 
             services.AddControllers(options =>
             {

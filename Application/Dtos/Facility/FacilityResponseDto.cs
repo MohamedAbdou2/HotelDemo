@@ -1,6 +1,6 @@
 ﻿namespace Application.Dtos.Facility;
 
-public class    FacilityResponseDto
+public class FacilityResponseDto
 {
     public int FacilityId { get; set; }
     public string Name { get; set; } 
