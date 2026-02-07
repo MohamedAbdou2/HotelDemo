@@ -7,7 +7,7 @@ using Application.Dtos.User;
 using FluentValidation;
 using Presentation.ViewModels.User;
 
-namespace Application.Validator
+namespace Presentation.Validator.User
 {
     public class ResetPasswordViewModelValidator : AbstractValidator<ResetPasswordViewModel>
     {

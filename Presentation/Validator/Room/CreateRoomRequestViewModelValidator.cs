@@ -1,11 +1,12 @@
 ﻿using Domain.Enums;
 using FluentValidation;
+using Presentation.ViewModels.Room;
 
-namespace Presentation.ViewModels.Room.RoomValidators
+namespace Presentation.Validator.Room
 {
-    public class UpdateRoomRequestViewModelValidator : AbstractValidator<UpdateRoomRequestViewModel>
+    public class CreateRoomRequestViewModelValidator : AbstractValidator<CreateRoomRequestViewModel>
     {
-        public UpdateRoomRequestViewModelValidator()
+        public CreateRoomRequestViewModelValidator()
         {
             RuleFor(x => x.RoomNumber)
                 .NotEmpty()
@@ -14,6 +15,7 @@ namespace Presentation.ViewModels.Room.RoomValidators
                 .WithMessage("Room number can contain only letters, numbers, and hyphens.");
 
             RuleFor(x => x.PricePerNight)
+                .NotEmpty()
                 .GreaterThan(0)
                 .WithMessage("Price per night must be greater than zero.");
 

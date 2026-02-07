@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
+using Presentation.ViewModels.Room;
 
-namespace Presentation.ViewModels.Room.RoomValidators
+namespace Presentation.Validator.Room
 {
     public class RoomFilterRequestViewModelValidator : AbstractValidator<RoomFilterRequestViewModel>
     {

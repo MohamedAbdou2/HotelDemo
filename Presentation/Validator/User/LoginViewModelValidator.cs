@@ -7,7 +7,7 @@ using Application.Dtos.User;
 using FluentValidation;
 using Presentation.ViewModels.User;
 
-namespace Presentation.Validator
+namespace Presentation.Validator.User
 {
     public class LoginViewModelValidator : AbstractValidator<LoginViewModel>
     {

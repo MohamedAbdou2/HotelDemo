@@ -8,7 +8,7 @@ using FluentValidation;
 using System.Text.RegularExpressions;
 using Presentation.ViewModels.User;
 
-namespace Presentation.Validator.UserValidator
+namespace Presentation.Validator.User
 {
     public class RegisterViewModelValidator : AbstractValidator<RegisterViewModel>
     {
@@ -30,7 +30,7 @@ namespace Presentation.Validator.UserValidator
             RuleFor(x => x.phoneNumber)
                 .NotEmpty().
                 WithMessage("Phone number is required.")
-                .Matches(@"^\d{10,15}$") 
+                .Matches(@"^\d{10,15}$")
                 .WithMessage("Phone number must be between 10 and 15 digits.");
 
             RuleFor(x => x.email)
