@@ -9,6 +9,7 @@ using Domain.Enums;
 using Domain.Models;
 using Domain.Repositories;
 using FluentValidation;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,14 +21,16 @@ namespace Application.Services
     public class RoomService : IRoomService
     {
         private readonly IGenericRepository<Room> _roomRepository;
+        private readonly IGenericRepository<RoomPicture> _roomPictureRepository;
         private readonly IMapper _mapper;
         private readonly IValidator<CreateRoomRequestDto> _createRoomValidator;
         private readonly IValidator<UpdateRoomRequestDto> _updateRoomValidator;
         private readonly IValidator<RoomFilterRequestDto> _roomFilterValidator;
 
-        public RoomService(IGenericRepository<Room> roomRepository, IMapper mapper, IValidator<CreateRoomRequestDto> createRoomValidator, IValidator<UpdateRoomRequestDto> updateRoomValidator, IValidator<RoomFilterRequestDto> roomFilterValidator)
+        public RoomService(IGenericRepository<Room> roomRepository, IGenericRepository<RoomPicture> roomPictureRepository, IMapper mapper, IValidator<CreateRoomRequestDto> createRoomValidator, IValidator<UpdateRoomRequestDto> updateRoomValidator, IValidator<RoomFilterRequestDto> roomFilterValidator)
         {
             _roomRepository = roomRepository;
+            _roomPictureRepository = roomPictureRepository;
             _mapper = mapper;
             _createRoomValidator = createRoomValidator;
             _updateRoomValidator = updateRoomValidator;
@@ -79,6 +82,7 @@ namespace Application.Services
             var validator = _updateRoomValidator.Validate(dto);
             if (!validator.IsValid)
                 return ResponseDto<bool>.ValidationFail(validator);
+            
             var roomExists = await _roomRepository.IsExist(r => r.Id == roomId);
             if (!roomExists)
             {
@@ -86,13 +90,44 @@ namespace Application.Services
             }
             var roomToUpdate = _mapper.Map<Room>(dto);
             roomToUpdate.Id = roomId;
-            var propsToUpdate = new[] { nameof(Room.PricePerNight), nameof(Room.IsAvailable), nameof(Room.RoomTypeId) };
+            var propsToUpdate = new[] 
+            { 
+                nameof(Room.RoomNumber), 
+                nameof(Room.PricePerNight), 
+                nameof(Room.IsAvailable), 
+                nameof(Room.RoomTypeId) 
+            };
+            
             var result = await _roomRepository.UpdateIncludeAsync(roomToUpdate, propsToUpdate);
             if (!result)
             {
                 return ResponseDto<bool>.Fail(ErrorCode.RoomUpdateFailed, "Failed to update room");
             }
+
+            await UpdateRoomPicturesAsync(roomId, dto.RoomPictures);
+
             return ResponseDto<bool>.Success(true, "Room updated successfully");
+        }
+
+        private async Task UpdateRoomPicturesAsync(Guid roomId, List<string> newPictureUrls)
+        {
+            var existingPicturesQuery = await _roomPictureRepository.GetAll(rp => rp.RoomId == roomId);
+            var existingPictureIds = await existingPicturesQuery.Select(rp => rp.Id).ToListAsync();
+            
+            foreach (var pictureId in existingPictureIds)
+            {
+                await _roomPictureRepository.Delete(pictureId);
+            }
+
+            foreach (var pictureUrl in newPictureUrls)
+            {
+                var newPicture = new RoomPicture
+                {
+                    RoomId = roomId,
+                    PictureUrl = pictureUrl
+                };
+                await _roomPictureRepository.Add(newPicture);
+            }
         }
 
 

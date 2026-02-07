@@ -1,22 +1,6 @@
-using HotelDemo.Helper;
-using HotelDemo.Persistence;
-using HotelDemo.ValidationFilters;
 using Infrastructure;
 using Infrastructure.DataSeeding;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Data.SqlClient;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 using Presentation.Extensions;
-using System.Text;
-using System.Text.Json.Serialization;
-using Application.Interfaces;
-using Application.Services.OfferServices;
-using Domain.Repositories;
-using Infrastructure.Repositories;
-using AutoMapper;
-using Application.MappingProfiles.Offer;
 
 var builder = WebApplication.CreateBuilder(args);
 
