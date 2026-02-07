@@ -9,5 +9,7 @@ namespace Domain.Models
 
         public ICollection<Reservation> Reservations { get; set; } = new HashSet<Reservation>();
         public ICollection<Feedback> Feedbacks { get; set; } = new HashSet<Feedback>();
+        public virtual ICollection<Payment> Payments { get; set; } = new List<Payment>();
+
     }
 }
