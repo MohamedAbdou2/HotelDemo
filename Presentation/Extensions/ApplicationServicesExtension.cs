@@ -28,7 +28,7 @@ namespace Presentation.Extensions
     public static class ApplicationServicesExtension
     {
         public static void AddApplicationServices(this IServiceCollection services, IConfiguration configuration)
-        {// Add services to the container.
+        {
 
             services.AddControllers(options =>
             {
@@ -49,12 +49,12 @@ namespace Presentation.Extensions
                 options.UseSqlServer(connectionString));
 
             services.AddHttpContextAccessor();
-            //services.AddFluentValidationAutoValidation();
-            //services.AddValidatorsFromAssemblies(new[]
-            //{
-            //     typeof(Program).Assembly,
-            //     typeof(IApplicationMarker).Assembly
-            //});
+            services.AddValidatorsFromAssemblies(new[]
+            {
+                 typeof(Program).Assembly,
+                 typeof(IApplicationMarker).Assembly,
+                 typeof(IPresentationMarker).Assembly
+            });
 
             //services.AddScoped<IValidator<RegisterViewModel>, RegisterViewModelValidator>();
             //services.AddScoped<IValidator<LoginViewModel>, LoginViewModelValidator>();
@@ -80,19 +80,17 @@ namespace Presentation.Extensions
                 };
 
             });
-            //services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
-            //services.AddScoped(typeof(IReadOnlyRepository<>), typeof(ReadOnlyRepository<>));
 
             services.AddInfrastructure();
 
 
             services.AddApplication();
-            //services.AddScoped<IOfferRepository, OfferRepository>();
-            // AutoMapper - scans assembly for all Profile classes
-            //services.AddAutoMapper(typeof(Profile).Assembly);           
-            services.AddAutoMapper(cfg =>
-            {
-            }, Assembly.GetExecutingAssembly());
+
+            services.AddAutoMapper(
+            typeof(IApplicationMarker).Assembly,
+            typeof(IPresentationMarker).Assembly
+            );
+           
             services.AddValidatorsFromAssembly(typeof(Program).Assembly);
             services.AddScoped<CurrentUser>();
         }

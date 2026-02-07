@@ -71,7 +71,7 @@ namespace Application.Services
         {
             var validator = registerDtoValidator.Validate(dto);
             if (!validator.IsValid)
-                return ResponseDto<bool>.ValidaitonFail(validator);
+                return ResponseDto<bool>.ValidationFail(validator);
 
             if (await CheckByEmail(dto.email))
                 return ResponseDto<bool>.Fail(ErrorCode.EmailalreadyExist, "This email is already registered");
@@ -105,7 +105,7 @@ namespace Application.Services
 
             var validator = updateUserDtoValidator.Validate(dto);
             if (!validator.IsValid)
-                return ResponseDto<bool>.ValidaitonFail(validator);
+                return ResponseDto<bool>.ValidationFail(validator);
 
             var newUser = new User
             {
@@ -129,7 +129,7 @@ namespace Application.Services
         {
             var validationResult = _staffRegisterDtoValidator.Validate(dto);
             if (!validationResult.IsValid)
-                return ResponseDto<bool>.ValidaitonFail(validationResult);
+                return ResponseDto<bool>.ValidationFail(validationResult);
 
             var isUserExist = await userRepository.IsExist(x => x.Email == dto.email);
             if (isUserExist)
@@ -164,7 +164,7 @@ namespace Application.Services
         {
             var validator = loginDtoValidator.Validate(dto);
             if (!validator.IsValid)
-                return ResponseDto<string>.ValidaitonFail(validator);
+                return ResponseDto<string>.ValidationFail(validator);
 
             var user = await GetUserbyEmail(dto.Email);
             if (user == null)
@@ -205,7 +205,7 @@ namespace Application.Services
         {
             var validator = resetPasswordDtoValidator.Validate(dto);
             if (!validator.IsValid)
-                return ResponseDto<bool>.ValidaitonFail(validator);
+                return ResponseDto<bool>.ValidationFail(validator);
 
             var usetOtp = await ValidateOtp(dto.otp);
             if (usetOtp == null)
@@ -260,7 +260,7 @@ namespace Application.Services
         {
             var validationResult = _updateRoleDtoValidator.Validate(dto);
             if (!validationResult.IsValid)
-                return ResponseDto<bool>.ValidaitonFail(validationResult);
+                return ResponseDto<bool>.ValidationFail(validationResult);
 
             if (!await IsAdmin(adminId))
                 return ResponseDto<bool>.Fail(ErrorCode.BadRequest, "Only admin can change user roles");
@@ -306,7 +306,7 @@ namespace Application.Services
         {
             var validationResult = _changePasswordDtoValidator.Validate(dto);
             if (!validationResult.IsValid)
-                return ResponseDto<bool>.ValidaitonFail(validationResult);
+                return ResponseDto<bool>.ValidationFail(validationResult);
 
             var userQurable = await userRepository.GetAll(x => x.Id == userId);
             var user = userQurable.FirstOrDefault();

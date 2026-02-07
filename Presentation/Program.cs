@@ -1,6 +1,9 @@
 using HotelDemo.Middlewares;
-using Infrastructure;
+using HotelDemo.Persistence;
+using HotelDemo.ValidationFilters;
 using Infrastructure.DataSeeding;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Presentation.Extensions;
 

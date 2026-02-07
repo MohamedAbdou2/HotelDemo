@@ -10,7 +10,9 @@ namespace Application.MappingProfiles.Room
         {
             CreateMap<Domain.Models.Room, Dtos.Room.GetRoomResponseDto>()
                 .ForMember(dest => dest.Type, opt => opt.MapFrom(src => src.Type != null ? src.Type.Name : string.Empty))
-                .ForMember(dest => dest.RoomPictures, opt => opt.MapFrom(src => src.RoomPictures != null ? src.RoomPictures.Select(rp => rp.PictureUrl) : Enumerable.Empty<string>()));
+                .ForMember(dest => dest.RoomPictures, opt => opt.MapFrom(src => src.RoomPictures != null 
+                    ? src.RoomPictures.Where(rp => !rp.IsDeleted).Select(rp => rp.PictureUrl) 
+                    : Enumerable.Empty<string>()));
 
 
             CreateMap<CreateRoomRequestDto, Domain.Models.Room>()

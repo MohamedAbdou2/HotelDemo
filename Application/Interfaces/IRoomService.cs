@@ -14,7 +14,7 @@ namespace Application.Interfaces
 
         Task<ResponseDto<bool>> DeleteRoom(Guid roomId);
 
-        Task<ResponseDto<PaginatedListResponseDto<IEnumerable<GetRoomResponseDto>>>> GetRoomsByFilter(RoomFilterRequestDto filterDto);
+        Task<ResponseDto<PaginatedListResponseDto<GetRoomResponseDto>>> GetRoomsByFilter(RoomFilterRequestDto filterDto);
 
 
 

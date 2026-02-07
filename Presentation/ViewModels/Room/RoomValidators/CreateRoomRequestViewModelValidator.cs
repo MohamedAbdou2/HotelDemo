@@ -14,6 +14,7 @@ namespace Presentation.ViewModels.Room.RoomValidators
                 .WithMessage("Room number can contain only letters, numbers, and hyphens.");
 
             RuleFor(x => x.PricePerNight)
+                .NotEmpty()
                 .GreaterThan(0)
                 .WithMessage("Price per night must be greater than zero.");
 
