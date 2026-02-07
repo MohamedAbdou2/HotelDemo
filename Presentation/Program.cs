@@ -1,9 +1,5 @@
 using HotelDemo.Middlewares;
-using HotelDemo.Persistence;
-using HotelDemo.ValidationFilters;
 using Infrastructure.DataSeeding;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Presentation.Extensions;
 
@@ -16,6 +12,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddTransient<ExceptionHandlingMiddleware>();
 builder.Services.AddTransient<TransactionMiddleWare>();
+
 
 builder.Services.AddSwaggerGen(c =>
 {

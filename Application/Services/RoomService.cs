@@ -67,6 +67,7 @@ namespace Application.Services
                 return ResponseDto<bool>.ValidationFail(validator);
 
             var room = _mapper.Map<Room>(dto);
+            room.RoomFacilities = dto.FacilitiesIds.Select(x => new RoomFacility { RoomId = room.Id,FacilityId = (RoomFacilityCode)x}).ToList();
             var result = await _roomRepository.Add(room);
             if (!result)
             {

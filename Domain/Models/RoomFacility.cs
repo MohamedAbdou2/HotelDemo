@@ -2,7 +2,7 @@
 
 namespace Domain.Models
 {
-    public class RoomFacility
+    public class RoomFacility 
     {
         public Guid RoomId { get; set; }
         public Room Room { get; set; } = null!;
@@ -10,3 +10,4 @@ namespace Domain.Models
         public Facility Facility { get; set; } = null!;
     }
 }
+
