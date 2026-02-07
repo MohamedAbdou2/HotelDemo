@@ -26,6 +26,7 @@ using Hangfire;
 
 using Application.Services;
 using Infrastructure.BackgroundServices;
+using Infrastructure.Services;
 
 namespace Presentation.Extensions
 {
@@ -104,14 +105,21 @@ namespace Presentation.Extensions
             //services.AddScoped<IOfferRepository, OfferRepository>();
             // AutoMapper - scans assembly for all Profile classes
             //services.AddAutoMapper(typeof(Profile).Assembly);
-            // إعداد مخزن البيانات الخاص بـ Hangfire
             services.AddHangfire(config => config.UseSqlServerStorage(connectionString));
 
-            // تشغيل السيرفر في الخلفية
+
             services.AddHangfireServer();
 
-            // ربط الـ Interface بالـ Implementation
+
            services.AddScoped<IBackgroundJobService, HangfireJobService>();
+
+
+            services.AddScoped<IStripePaymentService, StripePaymentService>();
+            // Register IHttpContextAccessor (required by CurrentUser)
+            services.AddHttpContextAccessor();
+
+            // Register CurrentUser as a scoped service
+            services.AddScoped<CurrentUser>();
         }
     }
 }
