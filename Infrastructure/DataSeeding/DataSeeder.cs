@@ -1,14 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Domain.Models;
+﻿using Domain.Models;
 using HotelDemo.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens.Experimental;
 
 namespace Infrastructure.DataSeeding
 {
@@ -26,26 +19,32 @@ namespace Infrastructure.DataSeeding
             {
                 var admin = new User
                 {
+                    Username = "admin",
                     FirstName = "admin",
-                    LastName = "admin", 
+                    PhoneNumber ="0123456789",
+                    LastName = "admin",
                     Email = "Admin@Company.com",
-                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin@123")
-                   
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin@123"),
+                    DateOfBirth = new DateTime(1990, 1, 1)
                 };
 
-                context.Users.Add(admin);   
-
-                var adminRoleId = context.Roles.FirstOrDefault(x=>x.Name=="Admin")?.Id;
-              
-                var adminrole = new UserRole
-                {
-                    UserId = admin.Id,  
-                    RoleId = adminRoleId.Value,
-                };
-
-                context.UserRoles.Add(adminrole);
+                context.Users.Add(admin);
 
                 await context.SaveChangesAsync();
+
+                var adminRoleId = context.Roles.FirstOrDefault(x => x.Name == "Admin")?.Id;
+
+                if (adminRoleId.HasValue)
+                {
+                    var adminrole = new UserRole
+                    {
+                        UserId = admin.Id,
+                        RoleId = adminRoleId.Value,
+                    };
+
+                    context.UserRoles.Add(adminrole);
+                    await context.SaveChangesAsync();
+                }
             }
         }
     }

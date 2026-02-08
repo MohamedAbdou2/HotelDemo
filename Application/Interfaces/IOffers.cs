@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Application.Dtos;
+﻿using Application.Dtos;
 using Application.Dtos.Offers;
 
 namespace Application.Interfaces

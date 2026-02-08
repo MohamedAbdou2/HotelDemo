@@ -6,7 +6,7 @@ namespace Application.Dtos
 {
     public class ResponseDto<T>
     {
-     
+
 
         public T? Data { get; set; }
 
@@ -27,19 +27,17 @@ namespace Application.Dtos
             return new ResponseDto<T>(data, true, message ?? "Success", null);
         }
 
-        public static ResponseDto<T>  Fail(ErrorCode? errorCode, string message)
+        public static ResponseDto<T> Fail(ErrorCode? errorCode, string message)
         {
             return new ResponseDto<T>(default, false, message, errorCode);
         }
-        public static ResponseDto<T> ValidaitonFail(ValidationResult validationResult)
+        public static ResponseDto<T> ValidationFail (ValidationResult validationResult)
         {
             var errorMessage = string.Join("; ",
                 validationResult.Errors.Select(e => $"{e.PropertyName}: {e.ErrorMessage}"));
 
             return Fail(
-                Domain.Enums.ErrorCode.ValidationError, "Validation Failed: " +
-                "\n" +
-                errorMessage);
+                 Domain.Enums.ErrorCode.ValidationError, $"Validation Failed \n {errorMessage}");
         }
 
     }

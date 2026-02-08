@@ -1,19 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
-using Domain.Models;
+﻿using Domain.Models;
 using Domain.Repositories;
 using HotelDemo.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
+using System.Linq.Expressions;
+using System.Reflection;
 
 namespace Infrastructure.Repositories
 {
-    public class GenericRepository<T> : IGenericRepository<T>  where T : BaseModel
+    public class GenericRepository<T> : IGenericRepository<T> where T : BaseModel
     {
         private readonly ApplicationDbContext context;
 
@@ -29,8 +24,8 @@ namespace Infrastructure.Repositories
         public async Task<bool> Add(T entity)
         {
             await context.Set<T>().AddAsync(entity);
-           var result =  await context.SaveChangesAsync();
-            return result > 0 ;
+            var result = await context.SaveChangesAsync();
+            return result > 0;
         }
 
         public async Task<IQueryable<T>> GetAll(Expression<Func<T, bool>>? creiteria = null)
@@ -64,6 +59,8 @@ namespace Infrastructure.Repositories
             {
                 context.Set<T>().Attach(entity);
                 entityEntry = context.Set<T>().Entry(entity);
+                entityEntry.State = EntityState.Unchanged;
+
             }
             else
             {
@@ -85,24 +82,44 @@ namespace Infrastructure.Repositories
             return result > 0;
 
         }
+        //type safe version, not usign reflection so it is faster 
+        public async Task<bool> UpdateIncludeAsync(T entity, params Expression<Func<T, object>>[] properties)
+        {
+            var local = context.Set<T>().Local.FirstOrDefault(x => x.Id == entity.Id);
+            EntityEntry<T> entityEntry;
 
+            if (local == null)
+            {
+                context.Set<T>().Attach(entity);
+                entityEntry = context.Entry(entity);
+            }
+            else
+            {
+                entityEntry = context.Entry(local);
+                entityEntry.CurrentValues.SetValues(entity);
+            }
+
+            foreach (var property in properties)
+            {
+                entityEntry.Property(property).IsModified = true;
+            }
+
+            var result = await context.SaveChangesAsync();
+            return result > 0;
+        }
         public async Task<bool> IsExist(Expression<Func<T,bool>> creiteria)
         {
-           var result =  await context.Set<T>().Where(x=>!x.IsDeleted).AnyAsync(creiteria);
+            var result = await context.Set<T>().Where(x => !x.IsDeleted).AnyAsync(creiteria);
             return result;
         }
         public async Task<bool> Delete(Guid Id)
         {
-            // make it to remove 
-            var entity = this.GetbyId(Id).Result.FirstOrDefault();
-            var result = false;
-            if (entity != null)
-            {
-                entity.IsDeleted = true;
-                result = await this.UpdateIncludeAsync(entity, nameof(entity.IsDeleted));
-            }
-            return result;
-
+            var entityqurable = await GetbyId(Id);
+            var entity = await entityqurable.FirstOrDefaultAsync();
+            context.Remove(entity);
+            var result = await context.SaveChangesAsync();
+            return result > 0;
         }
+    
     }
 }

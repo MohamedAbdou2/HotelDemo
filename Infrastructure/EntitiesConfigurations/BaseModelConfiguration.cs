@@ -8,6 +8,10 @@ namespace HotelDemo.Persistence.Infrastructure.EntitiesConfigurations
     {
         public static void ConfigureBaseModel<T>(this EntityTypeBuilder<T> builder) where T : BaseModel
         {
+            builder.HasKey(x => x.Id);
+            builder.Property(x => x.Id)
+                .HasDefaultValueSql("NEWID()");
+
             builder.Property(x => x.IsDeleted)
                    .HasDefaultValue(true)
                    .IsRequired();

@@ -5,12 +5,13 @@ using System.Text;
 using System.Threading.Tasks;
 using Application.Dtos.User;
 using FluentValidation;
+using Presentation.ViewModels.User;
 
-namespace Application.Validator
+namespace Presentation.Validator.User
 {
-    public class LoginDtoValidator : AbstractValidator<LoginDto>
+    public class LoginViewModelValidator : AbstractValidator<LoginViewModel>
     {
-        public LoginDtoValidator()
+        public LoginViewModelValidator()
         {
             RuleFor(x => x.Email)
                 .NotEmpty().WithMessage("Email is required.")

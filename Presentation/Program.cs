@@ -1,30 +1,52 @@
-using HotelDemo.Helper;
-using HotelDemo.Persistence;
-using HotelDemo.ValidationFilters;
+using HotelDemo.Middlewares;
 using Infrastructure.DataSeeding;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Data.SqlClient;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using Presentation.Extensions;
-using System.Text;
-using System.Text.Json.Serialization;
-using Application.Interfaces;
-using Application.Services.OfferServices;
-using Domain.Repositories;
-using Infrastructure.Repositories;
-using AutoMapper;
-using Application.MappingProfiles.Offer;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddApplicationServices(builder.Configuration);
 
-
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddTransient<ExceptionHandlingMiddleware>();
+builder.Services.AddTransient<TransactionMiddleWare>();
+
+
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "HotelDemo API",
+        Version = "v1"
+    });
+
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "Bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "Enter: Bearer {your JWT token}"
+    });
+
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+});
 
 var app = builder.Build();
 
@@ -39,7 +61,8 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
-
+app.UseMiddleware<ExceptionHandlingMiddleware>();
+app.UseMiddleware<TransactionMiddleWare>();
 app.MapControllers();
 
 app.Run();

@@ -9,7 +9,7 @@
 //using Domain.Repositories;
 //using HotelDemo.Persistence;
 //using Microsoft.EntityFrameworkCore;
-           
+
 //namespace Infrastructure.Repositories
 //{
 //    public class OfferRepository : GenericRepository<Offer>,IOfferRepository

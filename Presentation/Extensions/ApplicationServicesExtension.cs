@@ -1,18 +1,18 @@
-﻿using Application.Interfaces;
-using Application.Services.OfferServices;
-using Application.Validator;
-using AutoMapper;
+﻿using Application;
+using Application.Helper;
+using Application.Interfaces;
+using Application.Services.FacilityServices;
 using Domain.Repositories;
 using FluentValidation;
-using FluentValidation.AspNetCore;
-using HotelDemo.Helper;
 using HotelDemo.Persistence;
 using HotelDemo.ValidationFilters;
+using Infrastructure;
 using Infrastructure.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using System.Reflection;
 using System.Text;
 using System.Text.Json.Serialization;
 
@@ -21,7 +21,8 @@ namespace Presentation.Extensions
     public static class ApplicationServicesExtension
     {
         public static void AddApplicationServices(this IServiceCollection services, IConfiguration configuration)
-        {// Add services to the container.
+        {
+
 
             services.AddControllers(options =>
             {
@@ -35,7 +36,6 @@ namespace Presentation.Extensions
                 options.SuppressModelStateInvalidFilter = true;
             });
 
-
             var connectionString = configuration.GetConnectionString("DefaultConnection") ??
                            throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
@@ -43,13 +43,16 @@ namespace Presentation.Extensions
                 options.UseSqlServer(connectionString));
 
             services.AddHttpContextAccessor();
-            services.AddFluentValidationAutoValidation();
             services.AddValidatorsFromAssemblies(new[]
             {
                  typeof(Program).Assembly,
-                 typeof(IApplicationMarker).Assembly
+                 typeof(IApplicationMarker).Assembly,
+                 typeof(IPresentationMarker).Assembly
             });
 
+            //services.AddScoped<IValidator<RegisterViewModel>, RegisterViewModelValidator>();
+            //services.AddScoped<IValidator<LoginViewModel>, LoginViewModelValidator>();
+            //services.AddScoped<IValidator<R>, LoginViewModelValidator>();
             services.Configure<JwtSettings>(configuration.GetSection("Jwt"));
 
             services.AddAuthentication(opt => opt.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme)
@@ -57,7 +60,7 @@ namespace Presentation.Extensions
             opt =>
             {
                 var jwtsettings = configuration.GetSection("Jwt").Get<JwtSettings>();
-                var key = Encoding.UTF8.GetBytes(jwtsettings.Key);
+                var key = Encoding.ASCII.GetBytes(jwtsettings.Key);
                 opt.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
                 {
 
@@ -71,12 +74,21 @@ namespace Presentation.Extensions
                 };
 
             });
-            services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
-            services.AddScoped<IOffers, OfferService>();
-            //services.AddScoped<IOfferRepository, OfferRepository>();
-            // AutoMapper - scans assembly for all Profile classes
-            services.AddAutoMapper(typeof(Profile).Assembly);
 
+            services.AddInfrastructure();
+
+
+            services.AddApplication();
+
+            services.AddAutoMapper(
+            typeof(IApplicationMarker).Assembly,
+            typeof(IPresentationMarker).Assembly
+            );
+           
+            services.AddValidatorsFromAssembly(typeof(Program).Assembly);
+            services.AddScoped<CurrentUser>();
+            
+            //services.AddScoped<IFacilityRepository, FacilityRepository>();
         }
     }
 }
