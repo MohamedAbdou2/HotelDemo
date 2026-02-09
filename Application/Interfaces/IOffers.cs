@@ -5,10 +5,10 @@ namespace Application.Interfaces
 {
     public interface IOffers
     {
-        Task<ResponseDto<string>> CreateAsync(CreateOfferDto dto);
-        Task<ResponseDto<IEnumerable<OfferDto>>> GetAllAsync(bool onlyActive = false);
-        Task<ResponseDto<OfferDto>> GetByIdAsync(Guid id);
-        Task<ResponseDto<bool>> UpdateAsync(Guid id, UpdateOfferDto dto);
-        Task<ResponseDto<bool>> DeleteAsync(Guid id);
+        Task<ResponseDto<object>> CreateOfferAsync(CreateOfferDto dto);
+        Task<ResponseDto<IEnumerable<OfferResponseDto>>> GetAllOffersAsync();
+        Task<ResponseDto<OfferResponseDto>> GetOfferByIdAsync(Guid id);
+        Task<ResponseDto<object>> UpdateOfferAsync(Guid id, UpdateOfferDto dto);
+        Task<ResponseDto<object>> DeleteOfferAsync(Guid id);
     }
 }

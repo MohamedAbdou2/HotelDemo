@@ -12,6 +12,7 @@ namespace Presentation.MappingProfile.Room
             CreateMap<CreateRoomRequestViewModel, CreateRoomRequestDto>();
             CreateMap<UpdateRoomRequestViewModel, UpdateRoomRequestDto>();
             CreateMap<RoomFilterRequestViewModel, RoomFilterRequestDto>();
+            CreateMap<RoomDetailsDto, RoomDetailsViewModel>();
 
 
 

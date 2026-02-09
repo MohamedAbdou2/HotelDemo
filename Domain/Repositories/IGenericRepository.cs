@@ -15,7 +15,8 @@ namespace Domain.Repositories
         Task<bool> IsExist(Expression<Func<T,bool>> creiteria);
 
         Task<bool> Delete(Guid Id);
-        
+        Task<bool> SoftDeleteAsync(T entity);
+        IQueryable<T> Find(Expression<Func<T, bool>> creiteria);
 
     }
 }

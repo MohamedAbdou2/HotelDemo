@@ -4,7 +4,6 @@ using HotelDemo.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using System.Linq.Expressions;
-using System.Reflection;
 
 namespace Infrastructure.Repositories
 {
@@ -107,7 +106,7 @@ namespace Infrastructure.Repositories
             var result = await context.SaveChangesAsync();
             return result > 0;
         }
-        public async Task<bool> IsExist(Expression<Func<T,bool>> creiteria)
+        public async Task<bool> IsExist(Expression<Func<T, bool>> creiteria)
         {
             var result = await context.Set<T>().Where(x => !x.IsDeleted).AnyAsync(creiteria);
             return result;
@@ -120,6 +119,19 @@ namespace Infrastructure.Repositories
             var result = await context.SaveChangesAsync();
             return result > 0;
         }
-    
+
+        public IQueryable<T> Find(Expression<Func<T, bool>> creiteria)
+        {
+            return context.Set<T>().Where(m => !m.IsDeleted).Where(creiteria);
+        }
+
+        public async Task<bool> SoftDeleteAsync(T entity)
+        {
+            entity.IsDeleted = true;
+
+            var isDeleted = await UpdateIncludeAsync(entity, nameof(entity.IsDeleted));
+
+            return isDeleted;
+        }
     }
 }

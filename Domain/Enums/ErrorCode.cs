@@ -23,5 +23,11 @@
         RoomUpdateFailed = 203,
         RoomDeletionFailed = 204,
 
+
+        //Offer 
+        OfferNotFound = 301,
+        OfferCreationFailed = 302,
+        OfferUpdateFailed = 303,
+
     }
 }

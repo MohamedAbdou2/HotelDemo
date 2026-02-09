@@ -1,6 +1,8 @@
-﻿namespace Application.Dtos.Offers
+﻿using Application.Dtos.Room;
+
+namespace Application.Dtos.Offers
 {
-    public class OfferDto
+    public class OfferResponseDto
     {
         public Guid Id { get; set; }
         public string Title { get; set; }
@@ -9,7 +11,6 @@
         public bool IsActive { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
-        public List<Guid> RoomIds { get; set; } = new List<Guid>();
-
+        public IEnumerable<RoomDetailsDto> RoomDetails { get; set; } = new List<RoomDetailsDto>();
     }
 }

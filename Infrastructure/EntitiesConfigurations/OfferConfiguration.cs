@@ -37,7 +37,7 @@ namespace HotelDemo.Persistence.Infrastructure.EntitiesConfigurations
 
             builder.Property(x => x.IsActive)
                      .IsRequired()
-                        .HasDefaultValue(true);
+                     .HasDefaultValue(true);
 
             builder.Property(x => x.StartDate)
                    .IsRequired();
