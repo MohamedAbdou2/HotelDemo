@@ -18,5 +18,7 @@ namespace Domain.Models
         public Guid? PaymentId { get; set; }
         public Payment? Payment { get; set; }
 
+        ICollection<Feedback> Feedbacks { get; set; }
+
     }
 }

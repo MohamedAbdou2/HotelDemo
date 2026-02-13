@@ -31,15 +31,15 @@ namespace HotelDemo.Persistence.Infrastructure.EntitiesConfigurations
                    .HasForeignKey(x => x.CustomerId)
                    .OnDelete(DeleteBehavior.Restrict);
 
-            builder.HasOne(x => x.Room)
+            builder.HasOne(x => x.Reservation)
                    .WithMany(r => r.Feedbacks)
-                   .HasForeignKey(x => x.RoomId)
+                   .HasForeignKey(x => x.ReservationId)
                    .OnDelete(DeleteBehavior.NoAction);
 
-            builder.HasOne(x => x.FeedbackResponse)
-                   .WithOne(fr => fr.Feedback)
-                   .HasForeignKey<FeedbackResponse>(fr => fr.FeedbackId)
-                   .OnDelete(DeleteBehavior.Cascade);
+            //builder.HasOne(x => x.FeedbackResponse)
+            //       .WithOne(fr => fr.Feedback)
+            //       .HasForeignKey<FeedbackResponse>(fr => fr.FeedbackId)
+            //       .OnDelete(DeleteBehavior.Cascade);
 
             builder.ConfigureBaseModel();
         }
