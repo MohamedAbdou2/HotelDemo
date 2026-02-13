@@ -25,9 +25,9 @@ namespace HotelDemo.Persistence.Infrastructure.EntitiesConfigurations
                    .HasDefaultValue(true);
 
             builder.HasData(
-                new ReservationStatus { Id = ReservationStatusCode.Pending, Name = "Pending", IsAvailable = true },
-                new ReservationStatus { Id = ReservationStatusCode.Confirmed, Name = "Confirmed", IsAvailable = true },
-                new ReservationStatus { Id = ReservationStatusCode.CheckedIn, Name = "CheckedIn", IsAvailable = true },
+                new ReservationStatus { Id = ReservationStatusCode.Pending, Name = "Pending", IsAvailable = false },
+                new ReservationStatus { Id = ReservationStatusCode.Confirmed, Name = "Confirmed", IsAvailable = false },
+                new ReservationStatus { Id = ReservationStatusCode.CheckedIn, Name = "CheckedIn", IsAvailable = false },
                 new ReservationStatus { Id = ReservationStatusCode.CheckedOut, Name = "CheckedOut", IsAvailable = true },
                 new ReservationStatus { Id = ReservationStatusCode.Cancelled, Name = "Cancelled", IsAvailable = true }
             );

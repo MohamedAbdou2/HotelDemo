@@ -15,6 +15,19 @@ using Microsoft.IdentityModel.Tokens;
 using System.Reflection;
 using System.Text;
 using System.Text.Json.Serialization;
+using Application;
+using Infrastructure;
+using AutoMapper;
+using Presentation.MappingProfiles.User;
+using Application.Dtos.User;
+using Presentation.ViewModels.User;
+using Presentation.Validator;
+using System.Reflection;
+using Hangfire;
+
+using Application.Services;
+using Infrastructure.BackgroundServices;
+using Infrastructure.Services;
 
 namespace Presentation.Extensions
 {
@@ -55,7 +68,9 @@ namespace Presentation.Extensions
             //services.AddScoped<IValidator<R>, LoginViewModelValidator>();
             services.Configure<JwtSettings>(configuration.GetSection("Jwt"));
 
-            services.AddAuthentication(opt => opt.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme)
+            services.AddAuthentication(
+                opt => opt.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme
+                )
             .AddJwtBearer(
             opt =>
             {
@@ -76,8 +91,6 @@ namespace Presentation.Extensions
             });
 
             services.AddInfrastructure();
-
-
             services.AddApplication();
 
             services.AddAutoMapper(
@@ -87,8 +100,25 @@ namespace Presentation.Extensions
            
             services.AddValidatorsFromAssembly(typeof(Program).Assembly);
             services.AddScoped<CurrentUser>();
-            
-            //services.AddScoped<IFacilityRepository, FacilityRepository>();
+
+            //services.AddScoped<IOfferRepository, OfferRepository>();
+            // AutoMapper - scans assembly for all Profile classes
+            //services.AddAutoMapper(typeof(Profile).Assembly);
+            services.AddHangfire(config => config.UseSqlServerStorage(connectionString));
+
+
+            services.AddHangfireServer();
+
+
+           services.AddScoped<IBackgroundJobService, HangfireJobService>();
+
+
+            services.AddScoped<IStripePaymentService, StripePaymentService>();
+            // Register IHttpContextAccessor (required by CurrentUser)
+            services.AddHttpContextAccessor();
+
+            // Register CurrentUser as a scoped service
+            services.AddScoped<CurrentUser>();
         }
     }
 }

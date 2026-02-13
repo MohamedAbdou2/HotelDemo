@@ -15,6 +15,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.3.9" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.23" />
     <PackageReference Include="MimeKit" Version="4.14.0" />
+    <PackageReference Include="Polly" Version="8.6.5" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.15.0" />
 	 <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.23" />
 
@@ -22,6 +23,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Domain\Domain.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Services\Examples\" />
   </ItemGroup>
 
 </Project>

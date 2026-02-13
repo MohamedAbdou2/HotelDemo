@@ -3,6 +3,7 @@ using Domain.Repositories;
 using HotelDemo.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Polly;
 using System.Linq.Expressions;
 
 namespace Infrastructure.Repositories
@@ -111,12 +112,35 @@ namespace Infrastructure.Repositories
             var result = await context.Set<T>().Where(x => !x.IsDeleted).AnyAsync(creiteria);
             return result;
         }
-        public async Task<bool> Delete(Guid Id)
+      
+
+        public async Task<T?> GetByIdAsync(Guid id)
         {
-            var entityqurable = await GetbyId(Id);
-            var entity = await entityqurable.FirstOrDefaultAsync();
-            context.Remove(entity);
-            var result = await context.SaveChangesAsync();
+            return await context.Set<T>()
+                .FirstOrDefaultAsync(x => !x.IsDeleted && x.Id == id);
+        }
+
+     
+        public async Task<bool> Delete(Guid id)
+        {
+            var entity = await GetByIdAsync(id); 
+            if (entity == null) return false;
+
+            entity.IsDeleted = true;
+            return await UpdateIncludeAsync(entity, nameof(BaseModel.IsDeleted));
+        }
+
+        public async Task<bool> Update(T entity)
+        {
+            var entry = context.Entry(entity);
+            if (entry.State == EntityState.Detached)
+            {
+                context.Set<T>().Attach(entity);
+            }
+
+            entry.State = EntityState.Modified;
+
+             var result =  await context.SaveChangesAsync();
             return result > 0;
         }
 
