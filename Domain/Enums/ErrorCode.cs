@@ -16,12 +16,15 @@
         FaildedToUpdateUser =109,
         InvalidCurrentPassword = 110,
         FailedToUpdateUserRole = 111,
+        StaffRegisterFail = 112,
+        UserAlreadyHaveThisRole = 113,
 
         //Room
         RoomNotFound = 201,
         RoomCreationFailed = 202,
         RoomUpdateFailed = 203,
         RoomDeletionFailed = 204,
+        RoomNotAvailable = 205,
 
 
         //Offer 
@@ -29,5 +32,6 @@
         OfferCreationFailed = 302,
         OfferUpdateFailed = 303,
 
+     
     }
 }

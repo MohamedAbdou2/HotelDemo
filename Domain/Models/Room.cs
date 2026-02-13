@@ -1,4 +1,5 @@
 ﻿using Domain.Enums;
+using System.ComponentModel.DataAnnotations;
 
 namespace Domain.Models
 {
@@ -18,6 +19,8 @@ namespace Domain.Models
         public ICollection<Feedback> Feedbacks { get; set; } = new HashSet<Feedback>();
         public RoomTypeCode RoomTypeId { get; set; }
         public RoomType Type { get; set; } = null!;
+        [Timestamp] 
+        public byte[] RowVersion { get; set; }
 
 
     }
