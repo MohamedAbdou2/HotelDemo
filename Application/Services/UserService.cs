@@ -5,6 +5,7 @@ using Application.Dtos.User.Staff;
 using Application.Helper;
 using Application.Interfaces;
 using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using Domain.Enums;
 using Domain.Models;
 using Domain.Repositories;
@@ -33,6 +34,7 @@ namespace Application.Services
         private readonly IValidator<ResetPasswordDto> resetPasswordDtoValidator;
         private readonly IValidator<UpdateUserDto> updateUserDtoValidator;
         private readonly IValidator<ChangePasswordDto> _changePasswordDtoValidator;
+        private readonly CurrentUser currentUser;
 
         public UserService(IGenericRepository<User> userRepository,
             IMapper mapper,
@@ -48,7 +50,8 @@ namespace Application.Services
             IValidator<LoginDto> loginDtoValidator,
             IValidator<ResetPasswordDto> resetPasswordDtoValidator,
             IValidator<UpdateUserDto> UpdateUserDtoValidator,
-            IValidator<ChangePasswordDto> changePasswordDtoValidator)
+            IValidator<ChangePasswordDto> changePasswordDtoValidator,
+             CurrentUser currentUser)
         {
             this.userRepository = userRepository;
             this.mapper = mapper;
@@ -65,6 +68,7 @@ namespace Application.Services
             this.resetPasswordDtoValidator = resetPasswordDtoValidator;
             updateUserDtoValidator = UpdateUserDtoValidator;
             _changePasswordDtoValidator = changePasswordDtoValidator;
+            this.currentUser = currentUser;
         }
 
         public async Task<ResponseDto<bool>> Register(RegisterDto dto)
@@ -370,6 +374,20 @@ namespace Application.Services
             await userRepository.UpdateIncludeAsync(user, x => x.PasswordHash);
             return ResponseDto<bool>.Success(true, "Password changed successfully");
         }
+
+        public async Task<ResponseDto<UserDto>> GetUserbyId()
+        {
+            var userId = currentUser.GetUserId();
+
+            var userquerable  =await userRepository.GetAll(x=>x.Id == userId);
+            var userDto = await userquerable.ProjectTo<UserDto>(mapper.ConfigurationProvider).FirstOrDefaultAsync();
+
+                return userDto != null ? ResponseDto<UserDto>.Success(userDto)
+                :ResponseDto<UserDto>.Fail(ErrorCode.UserNotFound,"User not found");
+
+        }
+
+
     }
 
 }

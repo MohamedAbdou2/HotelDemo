@@ -23,7 +23,6 @@ namespace HotelDemo.Persistence.Infrastructure.EntitiesConfigurations
                    .IsRequired();
 
             builder.Property(x => x.Comments)
-                   .IsRequired()
                    .HasMaxLength(2000);
 
             builder.HasOne(x => x.Customer)

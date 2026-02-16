@@ -32,6 +32,16 @@
         OfferCreationFailed = 302,
         OfferUpdateFailed = 303,
 
+        //Reservation 
+        ReservationNotFound = 401,
+
+
+        //Feedback
+        FailedtoAddFeedback = 501,
+        FeedbackAlreadyExist = 502,
+        FeedBackDoesNotExist = 503,
+        FailedToDeleteFeedback = 504,
+        FailedToUpdateFeedback = 505
      
     }
 }
