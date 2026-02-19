@@ -8,13 +8,12 @@ namespace Domain.Models
 
         public Guid ReservationId { get; set; }
 
-        public Room Reservation { get; set; } = null!;
+        public Reservation Reservation { get; set; } = null!;
 
-        public int Rating { get; set; }
+        public float Rating { get; set; }
 
         public string Comments { get; set; } = null!;
 
-        //public FeedbackResponse? FeedbackResponse { get; set; }
 
 
 

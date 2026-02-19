@@ -4,7 +4,7 @@
     {
         public Guid ReservationId { get; set; }
 
-        public int Rating { get; set; }
+        public float Rating { get; set; }
 
         public string Comments { get; set; } = null!;
     }

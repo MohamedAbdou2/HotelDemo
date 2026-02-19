@@ -18,6 +18,7 @@
         FailedToUpdateUserRole = 111,
         StaffRegisterFail = 112,
         UserAlreadyHaveThisRole = 113,
+        CustomerNotFound = 114,
 
         //Room
         RoomNotFound = 201,
@@ -42,6 +43,9 @@
         FeedBackDoesNotExist = 503,
         FailedToDeleteFeedback = 504,
         FailedToUpdateFeedback = 505
+
+
+
      
     }
 }

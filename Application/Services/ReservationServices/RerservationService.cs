@@ -224,6 +224,7 @@ namespace Application.Services.ReservationServices
             return ResponseDto<ReservationResponseDto>.Success(response);
         }
 
+        public async Task<bool> IsReservationExist(Guid id) => await _reservationRepository.IsExist(x => x.Id == id);
 
     }
 

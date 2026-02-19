@@ -63,9 +63,6 @@ namespace Presentation.Extensions
                  typeof(IPresentationMarker).Assembly
             });
 
-            //services.AddScoped<IValidator<RegisterViewModel>, RegisterViewModelValidator>();
-            //services.AddScoped<IValidator<LoginViewModel>, LoginViewModelValidator>();
-            //services.AddScoped<IValidator<R>, LoginViewModelValidator>();
             services.Configure<JwtSettings>(configuration.GetSection("Jwt"));
 
             services.AddAuthentication(
@@ -99,11 +96,8 @@ namespace Presentation.Extensions
             );
            
             services.AddValidatorsFromAssembly(typeof(Program).Assembly);
-            services.AddScoped<CurrentUser>();
 
-            //services.AddScoped<IOfferRepository, OfferRepository>();
-            // AutoMapper - scans assembly for all Profile classes
-            //services.AddAutoMapper(typeof(Profile).Assembly);
+
             services.AddHangfire(config => config.UseSqlServerStorage(connectionString));
 
 
@@ -114,10 +108,8 @@ namespace Presentation.Extensions
 
 
             services.AddScoped<IStripePaymentService, StripePaymentService>();
-            // Register IHttpContextAccessor (required by CurrentUser)
             services.AddHttpContextAccessor();
 
-            // Register CurrentUser as a scoped service
             services.AddScoped<CurrentUser>();
         }
     }

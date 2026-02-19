@@ -9,6 +9,7 @@ using Application.Validator.Feedback;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Domain.Enums;
+using Domain.Models;
 using Domain.Repositories;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
@@ -22,13 +23,14 @@ namespace Application.Services.Feedback
         private readonly CurrentUser currentUser;
         private readonly IValidator<CreateFeedbackDto> createDtoValidator;
         private readonly IValidator<UpdateFeedbackDto> udpateDtoValidator;
-        private readonly RerservationService reservationServices;
+        private readonly IReservationService reservationServices;
+        private readonly IGenericRepository<Customer> customerRepo;
         private readonly IMapper mapper;
-        private readonly UserService userService;
 
         public FeedbackService(IGenericRepository<Domain.Models.Feedback> feedbackrepo 
-            ,RerservationService reservationServices 
-            ,IMapper mapper , UserService userService
+            ,IReservationService reservationServices 
+            ,IGenericRepository<Customer> customerRepo
+            ,IMapper mapper
             ,CurrentUser currentUser , IValidator<CreateFeedbackDto> createDtoValidator
             ,IValidator<UpdateFeedbackDto> udpateDtoValidator)
         {
@@ -37,8 +39,8 @@ namespace Application.Services.Feedback
             this.createDtoValidator = createDtoValidator;
             this.udpateDtoValidator = udpateDtoValidator;
             this.reservationServices = reservationServices;
+            this.customerRepo = customerRepo;
             this.mapper = mapper;
-            this.userService = userService;
         }
 
         public async Task<ResponseDto<bool>> CreateAsync(CreateFeedbackDto dto)
@@ -47,12 +49,10 @@ namespace Application.Services.Feedback
             if (!validationResult.IsValid)
                 return ResponseDto<bool>.ValidationFail(validationResult);
 
-            var feedbackcheck = await feedbackrepo.IsExist(x => x.ReservationId == dto.ReservationId);
+            var createFeedbackValidationResponse =await CreateFeedbackValidator(dto);
 
-            if (feedbackcheck)
-                ResponseDto<bool>.Fail(ErrorCode.FeedbackAlreadyExist, "You already added feedback");
-
-             dto.CustomerId = currentUser.GetUserId().Value;  
+            if (!createFeedbackValidationResponse.IsSuccess)
+                return ResponseDto<bool>.Fail(createFeedbackValidationResponse.ErrorCode , createFeedbackValidationResponse.Message);
 
             var feedBack = mapper.Map<CreateFeedbackDto, Domain.Models.Feedback>(dto);
 
@@ -62,6 +62,28 @@ namespace Application.Services.Feedback
                 : ResponseDto<bool>.Fail(ErrorCode.FailedtoAddFeedback, "Failed to Add Feedback");
         }
 
+        private async Task<ResponseDto<CreateFeedbackDto>> CreateFeedbackValidator(CreateFeedbackDto dto)
+        {
+            var feedbackcheck = await feedbackrepo.IsExist(x => x.ReservationId == dto.ReservationId);
+
+            if (feedbackcheck)
+               return ResponseDto<CreateFeedbackDto>.Fail(ErrorCode.FeedbackAlreadyExist, "You already added feedback");
+
+            if (!await reservationServices.IsReservationExist(dto.ReservationId))
+               return ResponseDto<CreateFeedbackDto>.Fail(ErrorCode.ReservationNotFound, "No reservation with this Id");
+
+
+            var userId = currentUser.GetUserId().Value;
+            var customerquerable = await customerRepo.GetAll(x => x.UserId == userId);
+            var customerId = await customerquerable.Select(x => x.Id).FirstOrDefaultAsync();
+
+            if (string.IsNullOrEmpty(customerId.ToString()))
+               return ResponseDto<CreateFeedbackDto>.Fail(ErrorCode.CustomerNotFound, "No Customer with this id");
+
+            dto.CustomerId = customerId;
+
+            return ResponseDto<CreateFeedbackDto>.Success(dto);
+        }
 
         public async Task<ResponseDto<FeedbackDto>> GetByIdAsync(Guid id)
         {
@@ -69,7 +91,7 @@ namespace Application.Services.Feedback
             var feedbackDto = await feedbackquerable.ProjectTo<FeedbackDto>(mapper.ConfigurationProvider).FirstOrDefaultAsync();
 
             if (feedbackDto == null)
-                ResponseDto<FeedbackDto>.Fail(ErrorCode.FeedBackDoesNotExist, "Feed back not exist");
+                return ResponseDto<FeedbackDto>.Fail(ErrorCode.FeedBackDoesNotExist, "Feed back not exist");
 
             return ResponseDto<FeedbackDto>.Success(feedbackDto);
         }
@@ -84,16 +106,18 @@ namespace Application.Services.Feedback
             var feedbackExist = await feedbackrepo.IsExist(x=>x.Id==id);
 
             if (!feedbackExist)
-                ResponseDto<bool>.Fail(ErrorCode.FeedBackDoesNotExist, "Feed back not exist");
+               return ResponseDto<bool>.Fail(ErrorCode.FeedBackDoesNotExist, "Feed back not exist");
 
             var newfeedback = new Domain.Models.Feedback { Id = id};
+
+            mapper.Map(dto, newfeedback);
+
 
             var modefiedparameters = typeof(UpdateFeedbackDto)
                 .GetProperties()
                 .Where(p => p.GetValue(dto) != null)
                 .Select(p => p.Name)
-                .ToArray(); ;
-
+                .ToArray();
             var result = await feedbackrepo.UpdateIncludeAsync(newfeedback, modefiedparameters);
 
             return result ? ResponseDto<bool>.Success(result, "Feed back updated successfully")
@@ -104,9 +128,9 @@ namespace Application.Services.Feedback
             var feedbackExist =await feedbackrepo.IsExist(x=>x.Id==id);
 
             if (!feedbackExist)
-                ResponseDto<bool>.Fail(ErrorCode.FeedBackDoesNotExist, "Feed back not exist");
+               return ResponseDto<bool>.Fail(ErrorCode.FeedBackDoesNotExist, "Feed back not exist");
 
-            var newfeedback = new Domain.Models.Feedback { Id = id};
+            var newfeedback = new Domain.Models.Feedback { Id = id , IsDeleted=true};
 
             var result =await feedbackrepo.UpdateIncludeAsync(newfeedback, nameof(Domain.Models.Feedback.IsDeleted));
 

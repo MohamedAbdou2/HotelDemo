@@ -16,8 +16,8 @@ namespace Application.Validator.Feedback
                 .NotEmpty().WithMessage("ReservationId is required");
 
             RuleFor(x => x.Rating)
-                .InclusiveBetween(1, 5)
-                .WithMessage("Rating must be between 1 and 5");
+                 .Must(value => new float[] { 1, 1.5f, 2, 2.5f, 3, 3.5f, 4, 4.5f, 5 }.Contains(value))
+            .WithMessage("Rating must be one of the following: 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5");
 
             RuleFor(x => x.Comments)
                 .NotEmpty().WithMessage("Comments are required")
