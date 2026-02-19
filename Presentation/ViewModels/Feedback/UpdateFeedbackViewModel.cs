@@ -2,8 +2,8 @@
 {
     public class UpdateFeedbackViewModel
     {
-        public int Rating { get; set; }
+        public float Rating { get; set; }
 
-        public string Comments { get; set; } = null!;
+        public string? Comments { get; set; }
     }
 }

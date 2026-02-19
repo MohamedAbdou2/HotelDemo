@@ -27,7 +27,6 @@ namespace HotelDemo.Persistence
 
         public DbSet<Payment> Payments { get; set; }
         public DbSet<Feedback> Feedbacks { get; set; }
-        public DbSet<FeedbackResponse> FeedbackResponses { get; set; }
         public DbSet<Offer> Offers { get; set; }
         public DbSet<RoomOffer> RoomOffers { get; set; }
         public DbSet<RoomPicture> RoomPictures { get; set; }

@@ -9,14 +9,6 @@ namespace HotelDemo.Persistence.Infrastructure.EntitiesConfigurations
     {
         public void Configure(EntityTypeBuilder<Feedback> builder)
         {
-            builder.ToTable("Feedbacks", t =>
-            {
-                t.HasCheckConstraint(
-                "CK_Feedbacks_Rating_Range",
-                "[Rating] >= 1 AND [Rating] <= 5"
-            );
-            });
-
             builder.HasKey(x => x.Id);
 
             builder.Property(x => x.Rating)
@@ -31,9 +23,13 @@ namespace HotelDemo.Persistence.Infrastructure.EntitiesConfigurations
                    .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasOne(x => x.Reservation)
-                   .WithMany(r => r.Feedbacks)
+                   .WithMany()
                    .HasForeignKey(x => x.ReservationId)
                    .OnDelete(DeleteBehavior.NoAction);
+
+                builder.Property(x => x.Rating)
+                       .HasColumnType("decimal(2,1)") 
+                       .IsRequired();
 
             //builder.HasOne(x => x.FeedbackResponse)
             //       .WithOne(fr => fr.Feedback)

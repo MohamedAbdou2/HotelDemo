@@ -12,7 +12,7 @@ namespace Domain.Models
         public Guid ReservationId { get; set; }
 
         [Required]
-        public Guid CustomerId { get; set; }  
+        public Guid CustomerId { get; set; }
 
         [Required]
         [Column(TypeName = "decimal(18,2)")]
@@ -29,32 +29,32 @@ namespace Domain.Models
 
         // ==================== Gateway Info ====================
 
-     
+
         [MaxLength(200)]
         public string? TransactionId { get; set; }
 
-    
+
         [Column(TypeName = "nvarchar(max)")]
         public string? GatewayResponse { get; set; }
 
-   
+
         [MaxLength(500)]
         public string? PaymentUrl { get; set; }
 
         // ==================== Security & Tracking ====================
 
-        
+
         [MaxLength(45)]  // IPv6 max length
         public string? IpAddress { get; set; }
 
-      
+
         public bool WebhookVerified { get; set; } = false;
 
         // ==================== Timestamps ====================
 
         public DateTime? CompletedAt { get; set; }
 
-       
+
         public DateTime? FailedAt { get; set; }
 
         // ==================== Failure Info ====================
@@ -62,7 +62,7 @@ namespace Domain.Models
         [MaxLength(500)]
         public string? FailureReason { get; set; }
 
-   
+
         [MaxLength(100)]
         public string? FailureCode { get; set; }
 
@@ -84,6 +84,6 @@ namespace Domain.Models
         public virtual PaymentStatus PaymentStatus { get; set; } = null!;
 
 
-      
+
     }
 }

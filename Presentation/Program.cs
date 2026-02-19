@@ -1,3 +1,4 @@
+using Hangfire;
 using HotelDemo.Middlewares;
 using Infrastructure.DataSeeding;
 using Microsoft.OpenApi.Models;
@@ -61,6 +62,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseHangfireDashboard("/hangfire");
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseMiddleware<TransactionMiddleWare>();
 app.MapControllers();

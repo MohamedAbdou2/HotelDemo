@@ -4,6 +4,7 @@ using AutoMapper;
 using Domain.Enums;
 using FluentValidation;
 using HotelDemo.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Presentation.ViewModels.Feedback;
@@ -11,6 +12,7 @@ using Presentation.ViewModels.Feedback;
 namespace Presentation.Controllers
 {
     [Route("api/[controller]")]
+    [Authorize(Roles ="Customer")]
     [ApiController]
     public class FeedbackController : ControllerBase
     {
@@ -72,11 +74,11 @@ namespace Presentation.Controllers
         {
             var result = await _feedbackService.GetByIdAsync(id);
 
-            if (result == null)
+            if (result.Data == null)
                 return ResponseViewModel<FeedbackViewModel>
                     .Fail(ErrorCode.NotFound, "Feedback not found");
 
-            var viewModel = _mapper.Map<FeedbackViewModel>(result);
+            var viewModel = _mapper.Map<FeedbackViewModel>(result.Data);
 
             return ResponseViewModel<FeedbackViewModel>
                 .Success(viewModel);

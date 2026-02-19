@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HotelDemo.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260213202443_UpateFeedbackTable")]
-    partial class UpateFeedbackTable
+    [Migration("20260219223619_FeedbackTable")]
+    partial class FeedbackTable
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -158,6 +158,9 @@ namespace HotelDemo.Migrations
                     b.Property<Guid>("ReservationId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid?>("RoomId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
@@ -171,6 +174,8 @@ namespace HotelDemo.Migrations
                     b.HasIndex("CustomerId");
 
                     b.HasIndex("ReservationId");
+
+                    b.HasIndex("RoomId");
 
                     b.HasIndex("UpdatedById");
 
@@ -297,8 +302,11 @@ namespace HotelDemo.Migrations
                         .HasDefaultValueSql("NEWID()");
 
                     b.Property<decimal>("Amount")
-                        .HasPrecision(10, 2)
-                        .HasColumnType("decimal(10,2)");
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -306,13 +314,31 @@ namespace HotelDemo.Migrations
                     b.Property<Guid?>("CreatedById")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid>("CustomerId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("FailedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("FailureCode")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("FailureReason")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("GatewayResponse")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("IpAddress")
+                        .HasMaxLength(45)
+                        .HasColumnType("nvarchar(45)");
+
                     b.Property<bool>("IsDeleted")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
                         .HasDefaultValue(true);
-
-                    b.Property<DateTime>("PaymentDate")
-                        .HasColumnType("datetime2");
 
                     b.Property<int>("PaymentMethodId")
                         .HasColumnType("int");
@@ -320,8 +346,22 @@ namespace HotelDemo.Migrations
                     b.Property<int>("PaymentStatusId")
                         .HasColumnType("int");
 
+                    b.Property<string>("PaymentUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
                     b.Property<Guid>("ReservationId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<string>("TransactionId")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
@@ -329,21 +369,51 @@ namespace HotelDemo.Migrations
                     b.Property<Guid?>("UpdatedById")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<bool>("WebhookVerified")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
                     b.HasKey("Id");
+
+                    b.HasIndex("CreatedAt")
+                        .HasDatabaseName("IX_Payments_CreatedAt");
 
                     b.HasIndex("CreatedById");
 
-                    b.HasIndex("PaymentDate");
+                    b.HasIndex("CustomerId")
+                        .HasDatabaseName("IX_Payments_CustomerId");
 
-                    b.HasIndex("PaymentMethodId");
+                    b.HasIndex("FailedAt")
+                        .HasDatabaseName("IX_Payments_FailedAt")
+                        .HasFilter("[FailedAt] IS NOT NULL");
 
-                    b.HasIndex("PaymentStatusId");
+                    b.HasIndex("PaymentStatusId")
+                        .HasDatabaseName("IX_Payments_Status");
 
-                    b.HasIndex("ReservationId");
+                    b.HasIndex("ReservationId")
+                        .HasDatabaseName("IX_Payments_ReservationId");
+
+                    b.HasIndex("TransactionId")
+                        .IsUnique()
+                        .HasDatabaseName("IX_Payments_TransactionId")
+                        .HasFilter("[TransactionId] IS NOT NULL");
 
                     b.HasIndex("UpdatedById");
 
-                    b.ToTable("Payments", (string)null);
+                    b.HasIndex("WebhookVerified")
+                        .HasDatabaseName("IX_Payments_WebhookPending")
+                        .HasFilter("[PaymentStatusId] = 1 AND [WebhookVerified] = 0");
+
+                    b.HasIndex("PaymentMethodId", "PaymentStatusId")
+                        .HasDatabaseName("IX_Payments_Method_Status");
+
+                    b.ToTable("Payments", null, t =>
+                        {
+                            t.HasComment("Payment transactions for reservations");
+
+                            t.HasCheckConstraint("CK_Payments_Amount_Positive", "[Amount] > 0");
+                        });
                 });
 
             modelBuilder.Entity("Domain.Models.PaymentMethod", b =>
@@ -573,10 +643,22 @@ namespace HotelDemo.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasDefaultValueSql("NEWID()");
 
+                    b.Property<DateTime?>("CancelledAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<DateTime>("CheckInDate")
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime>("CheckOutDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("CheckedInAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("CheckedOutAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("ConfirmedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime>("CreatedAt")
@@ -588,13 +670,16 @@ namespace HotelDemo.Migrations
                     b.Property<Guid>("CustomerId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<decimal?>("Discount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime?>("ExpiresAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<bool>("IsDeleted")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
                         .HasDefaultValue(true);
-
-                    b.Property<Guid?>("PaymentId")
-                        .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("ReservationStatusId")
                         .HasColumnType("int");
@@ -602,9 +687,15 @@ namespace HotelDemo.Migrations
                     b.Property<Guid>("RoomId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
                     b.Property<decimal>("TotalPrice")
-                        .HasPrecision(10, 2)
-                        .HasColumnType("decimal(10,2)");
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
@@ -614,23 +705,82 @@ namespace HotelDemo.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CheckInDate")
+                        .HasDatabaseName("IX_Reservations_CheckInDate");
+
+                    b.HasIndex("CheckOutDate")
+                        .HasDatabaseName("IX_Reservations_CheckOutDate");
+
                     b.HasIndex("CreatedById");
 
-                    b.HasIndex("CustomerId");
+                    b.HasIndex("CustomerId")
+                        .HasDatabaseName("IX_Reservations_CustomerId");
 
-                    b.HasIndex("PaymentId")
-                        .IsUnique()
-                        .HasFilter("[PaymentId] IS NOT NULL");
+                    b.HasIndex("ExpiresAt")
+                        .HasDatabaseName("IX_Reservations_ExpiresAt")
+                        .HasFilter("[ExpiresAt] IS NOT NULL AND [ReservationStatusId] = 1");
 
-                    b.HasIndex("ReservationStatusId");
+                    b.HasIndex("ReservationStatusId")
+                        .HasDatabaseName("IX_Reservations_Status");
 
-                    b.HasIndex("RoomId");
+                    b.HasIndex("RoomId")
+                        .HasDatabaseName("IX_Reservations_RoomId");
 
                     b.HasIndex("UpdatedById");
+
+                    b.HasIndex("RoomId", "CheckInDate", "CheckOutDate")
+                        .HasDatabaseName("IX_Reservations_Room_Dates");
 
                     b.ToTable("Reservations", null, t =>
                         {
                             t.HasCheckConstraint("CK_Reservations_CheckOut_After_CheckIn", "[CheckOutDate] > [CheckInDate]");
+
+                            t.HasCheckConstraint("CK_Reservations_ExpiresAt_Valid", "[ExpiresAt] IS NULL OR [ExpiresAt] > [CreatedAt]");
+
+                            t.HasCheckConstraint("CK_Reservations_TotalPrice_Positive", "[TotalPrice] > 0");
+                        });
+                });
+
+            modelBuilder.Entity("Domain.Models.ReservationCancellation", b =>
+                {
+                    b.Property<Guid>("ReservationId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("CancellationType")
+                        .HasColumnType("int")
+                        .HasComment("1=Auto, 2=UserRequested, 3=AdminCancelled");
+
+                    b.Property<DateTime>("CancelledAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<Guid>("CancelledByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime?>("RefundProcessedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("ReservationId");
+
+                    b.HasIndex("CancellationType")
+                        .HasDatabaseName("IX_ReservationCancellations_Type");
+
+                    b.HasIndex("CancelledAt")
+                        .HasDatabaseName("IX_ReservationCancellations_Date");
+
+                    b.HasIndex("CancelledByUserId")
+                        .HasDatabaseName("IX_ReservationCancellations_UserId");
+
+                    b.ToTable("ReservationCancellations", null, t =>
+                        {
+                            t.HasComment("Stores detailed cancellation information for reservations");
                         });
                 });
 
@@ -657,19 +807,19 @@ namespace HotelDemo.Migrations
                         new
                         {
                             Id = 1,
-                            IsAvailable = true,
+                            IsAvailable = false,
                             Name = "Pending"
                         },
                         new
                         {
                             Id = 2,
-                            IsAvailable = true,
+                            IsAvailable = false,
                             Name = "Confirmed"
                         },
                         new
                         {
                             Id = 3,
-                            IsAvailable = true,
+                            IsAvailable = false,
                             Name = "CheckedIn"
                         },
                         new
@@ -769,6 +919,12 @@ namespace HotelDemo.Migrations
 
                     b.Property<int>("RoomTypeId")
                         .HasColumnType("int");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
@@ -1201,11 +1357,15 @@ namespace HotelDemo.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Domain.Models.Room", "Reservation")
-                        .WithMany("Feedbacks")
+                    b.HasOne("Domain.Models.Reservation", "Reservation")
+                        .WithMany()
                         .HasForeignKey("ReservationId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
+
+                    b.HasOne("Domain.Models.Room", null)
+                        .WithMany("Feedbacks")
+                        .HasForeignKey("RoomId");
 
                     b.HasOne("Domain.Models.User", "UpdatedBy")
                         .WithMany()
@@ -1270,6 +1430,12 @@ namespace HotelDemo.Migrations
                         .HasForeignKey("CreatedById")
                         .OnDelete(DeleteBehavior.Restrict);
 
+                    b.HasOne("Domain.Models.Customer", "Customer")
+                        .WithMany("Payments")
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("Domain.Models.PaymentMethod", "PaymentMethod")
                         .WithMany()
                         .HasForeignKey("PaymentMethodId")
@@ -1282,6 +1448,12 @@ namespace HotelDemo.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("Domain.Models.Reservation", "Reservation")
+                        .WithMany("Payments")
+                        .HasForeignKey("ReservationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("Domain.Models.User", "UpdatedBy")
                         .WithMany()
                         .HasForeignKey("UpdatedById")
@@ -1289,9 +1461,13 @@ namespace HotelDemo.Migrations
 
                     b.Navigation("CreatedBy");
 
+                    b.Navigation("Customer");
+
                     b.Navigation("PaymentMethod");
 
                     b.Navigation("PaymentStatus");
+
+                    b.Navigation("Reservation");
 
                     b.Navigation("UpdatedBy");
                 });
@@ -1340,11 +1516,6 @@ namespace HotelDemo.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Domain.Models.Payment", "Payment")
-                        .WithOne("Reservation")
-                        .HasForeignKey("Domain.Models.Reservation", "PaymentId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.HasOne("Domain.Models.ReservationStatus", "ReservationStatus")
                         .WithMany()
                         .HasForeignKey("ReservationStatusId")
@@ -1366,13 +1537,30 @@ namespace HotelDemo.Migrations
 
                     b.Navigation("Customer");
 
-                    b.Navigation("Payment");
-
                     b.Navigation("ReservationStatus");
 
                     b.Navigation("Room");
 
                     b.Navigation("UpdatedBy");
+                });
+
+            modelBuilder.Entity("Domain.Models.ReservationCancellation", b =>
+                {
+                    b.HasOne("Domain.Models.User", "CancelledByUser")
+                        .WithMany()
+                        .HasForeignKey("CancelledByUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Models.Reservation", "Reservation")
+                        .WithOne("Cancellation")
+                        .HasForeignKey("Domain.Models.ReservationCancellation", "ReservationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("CancelledByUser");
+
+                    b.Navigation("Reservation");
                 });
 
             modelBuilder.Entity("Domain.Models.Room", b =>
@@ -1581,6 +1769,8 @@ namespace HotelDemo.Migrations
                 {
                     b.Navigation("Feedbacks");
 
+                    b.Navigation("Payments");
+
                     b.Navigation("Reservations");
                 });
 
@@ -1594,10 +1784,11 @@ namespace HotelDemo.Migrations
                     b.Navigation("RoomOffers");
                 });
 
-            modelBuilder.Entity("Domain.Models.Payment", b =>
+            modelBuilder.Entity("Domain.Models.Reservation", b =>
                 {
-                    b.Navigation("Reservation")
-                        .IsRequired();
+                    b.Navigation("Cancellation");
+
+                    b.Navigation("Payments");
                 });
 
             modelBuilder.Entity("Domain.Models.Role", b =>

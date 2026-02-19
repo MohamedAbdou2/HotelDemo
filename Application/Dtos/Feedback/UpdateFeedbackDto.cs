@@ -8,7 +8,7 @@ namespace Application.Dtos.Feedback
 {
     public class UpdateFeedbackDto
     {
-        public int Rating { get; set; }
+        public float Rating { get; set; }
 
         public string Comments { get; set; } = null!;
     }
