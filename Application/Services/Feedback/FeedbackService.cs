@@ -112,7 +112,6 @@ namespace Application.Services.Feedback
 
             mapper.Map(dto, newfeedback);
 
-
             var modefiedparameters = typeof(UpdateFeedbackDto)
                 .GetProperties()
                 .Where(p => p.GetValue(dto) != null)
