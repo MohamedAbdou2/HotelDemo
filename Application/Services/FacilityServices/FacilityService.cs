@@ -22,8 +22,7 @@ public class FacilityService : IFacilityService
 
     public async Task<ResponseDto<IEnumerable<FacilityResponseDto>>> GetAllFacilitiesAsync()
     {
-        var query = await _facilityRepo.GetAll(null);
-        var facilities = await query.ProjectTo<FacilityResponseDto>(_mapper.ConfigurationProvider).ToListAsync();
+        var facilities = await _facilityRepo.GetAll(null).ProjectTo<FacilityResponseDto>(_mapper.ConfigurationProvider).ToListAsync();
 
         return ResponseDto<IEnumerable<FacilityResponseDto>>.Success(facilities);
     }

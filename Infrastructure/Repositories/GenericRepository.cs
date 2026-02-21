@@ -28,7 +28,7 @@ namespace Infrastructure.Repositories
             return result > 0;
         }
 
-        public async Task<IQueryable<T>> GetAll(Expression<Func<T, bool>>? creiteria = null)
+        public IQueryable<T> GetAll(Expression<Func<T, bool>>? creiteria = null)
         {
             var query = context.Set<T>().Where(x => !x.IsDeleted);
 
@@ -40,7 +40,7 @@ namespace Infrastructure.Repositories
             return query;
         }
 
-        public async Task<IQueryable<T>> GetbyId(Guid Id)
+        public  IQueryable<T> GetbyId(Guid Id)
         {
             var query = context.Set<T>().AsQueryable();
 

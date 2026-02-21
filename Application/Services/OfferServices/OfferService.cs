@@ -44,9 +44,7 @@ namespace Application.Services.OfferServices
 
         public async Task<ResponseDto<IEnumerable<OfferResponseDto>>> GetAllOffersAsync()
         {
-            var listQuerable = await _offerRepo.GetAll();
-
-            var offers = await listQuerable.ProjectTo<OfferResponseDto>(_mapper.ConfigurationProvider)
+            var offers = await _offerRepo.GetAll().ProjectTo<OfferResponseDto>(_mapper.ConfigurationProvider)
                                           .ToListAsync();
 
             return ResponseDto<IEnumerable<OfferResponseDto>>.Success(offers);
@@ -54,8 +52,7 @@ namespace Application.Services.OfferServices
 
         public async Task<ResponseDto<OfferResponseDto>> GetOfferByIdAsync(Guid id)
         {
-            var offerQueryable = await _offerRepo.GetbyId(id);
-            var offer = await offerQueryable.ProjectTo<OfferResponseDto>(_mapper.ConfigurationProvider).FirstOrDefaultAsync();
+            var offer = await _offerRepo.GetbyId(id).ProjectTo<OfferResponseDto>(_mapper.ConfigurationProvider).FirstOrDefaultAsync();
 
             if (offer is null)
                 return ResponseDto<OfferResponseDto>.Fail(ErrorCode.NotFound, "Offer not found");
@@ -89,8 +86,7 @@ namespace Application.Services.OfferServices
         public async Task<ResponseDto<object>> DeleteOfferAsync(Guid id)
         {
 
-            var offeQueryable = await _offerRepo.GetbyId(id);
-            var offer = await offeQueryable.FirstOrDefaultAsync();
+            var offer = await _offerRepo.GetbyId(id).FirstOrDefaultAsync();
 
             if (offer is null)
                 return ResponseDto<object>.Fail(ErrorCode.OfferNotFound, "Offer Not Found");

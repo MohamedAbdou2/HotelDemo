@@ -56,16 +56,16 @@ namespace Application.Services.PaymentServices
 
         private async Task<Reservation> GetReservationById(Guid reservationId)
         {
-            var reservationQuery = await _reservationRepository.GetbyId(reservationId);
-            return reservationQuery.FirstOrDefault();
+            
+            return await _reservationRepository.GetbyId(reservationId).FirstOrDefaultAsync();
         }
 
         private async Task<bool> IsReservationAlreadyPaid(Guid reservationId)
         {
             var existingPayments = await _paymentRepository.GetAll(
-                p => p.ReservationId == reservationId && p.PaymentStatusId == PaymentStatusCode.Paid);
+                p => p.ReservationId == reservationId && p.PaymentStatusId == PaymentStatusCode.Paid).AnyAsync();
 
-            return existingPayments.Any();
+            return existingPayments;
         }
 
         private async Task<Payment> CreatePaymentEntity(Reservation reservation, string ipAddress)
@@ -113,15 +113,14 @@ namespace Application.Services.PaymentServices
 
         private async Task<string> GetCustomerEmail(Guid paymentId)
         {
-            var paymentquery = await _paymentRepository.GetAll(r => r.Id == paymentId);
-            var email = await paymentquery.Include(x => x.Customer).ThenInclude(x => x.User).Select(x => x.Customer.User.Email).FirstOrDefaultAsync();
+            var email = await _paymentRepository.GetAll(r => r.Id == paymentId)
+                .Include(x => x.Customer).ThenInclude(x => x.User).Select(x => x.Customer.User.Email).FirstOrDefaultAsync();
             return email;
         }
 
         private async Task<Payment> GetPaymentById(Guid paymentId)
         {
-            var paymentQuery = await _paymentRepository.GetbyId(paymentId);
-            return paymentQuery.FirstOrDefault();
+            return _paymentRepository.GetbyId(paymentId).FirstOrDefault();
         }
 
         private async Task CompletePayment(Payment payment, string sessionId, string paymentIntentId)
@@ -199,8 +198,7 @@ namespace Application.Services.PaymentServices
 
         public async Task<ResponseDto<List<PaymentResponseDto>>> GetPaymentHistoryAsync(Guid reservationId)
         {
-            var paymentsQuery = await _paymentRepository.GetAll(p => p.ReservationId == reservationId);
-            var payments = paymentsQuery.OrderByDescending(p => p.CreatedAt).ToList();
+            var payments = _paymentRepository.GetAll(p => p.ReservationId == reservationId).OrderByDescending(p => p.CreatedAt).ToList();
             var paymentDtos = _mapper.Map<List<PaymentResponseDto>>(payments);
 
             return ResponseDto<List<PaymentResponseDto>>.Success(paymentDtos);
