@@ -74,8 +74,7 @@ namespace Application.Services.Feedback
 
 
             var userId = currentUser.GetUserId().Value;
-            var customerquerable = await customerRepo.GetAll(x => x.UserId == userId);
-            var customerId = await customerquerable.Select(x => x.Id).FirstOrDefaultAsync();
+            var customerId = await customerRepo.GetAll(x => x.UserId == userId).Select(x => x.Id).FirstOrDefaultAsync();
 
             if (string.IsNullOrEmpty(customerId.ToString()))
                return ResponseDto<CreateFeedbackDto>.Fail(ErrorCode.CustomerNotFound, "No Customer with this id");
@@ -85,10 +84,9 @@ namespace Application.Services.Feedback
             return ResponseDto<CreateFeedbackDto>.Success(dto);
         }
 
-        public async Task<ResponseDto<FeedbackDto>> GetByIdAsync(Guid id)
+        public async Task<ResponseDto<FeedbackDto>> GetByIdAsync(Guid reservationId)
         {
-            var feedbackquerable = await feedbackrepo.GetbyId(id);
-            var feedbackDto = await feedbackquerable.ProjectTo<FeedbackDto>(mapper.ConfigurationProvider).FirstOrDefaultAsync();
+            var feedbackDto = await feedbackrepo.GetAll(x=>x.ReservationId==reservationId).ProjectTo<FeedbackDto>(mapper.ConfigurationProvider).FirstOrDefaultAsync();
 
             if (feedbackDto == null)
                 return ResponseDto<FeedbackDto>.Fail(ErrorCode.FeedBackDoesNotExist, "Feed back not exist");

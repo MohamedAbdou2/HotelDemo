@@ -99,8 +99,7 @@ namespace Application.Services.ReservationServices
 
         private async Task<Room> GetRoomById(Guid roomId)
         {
-            var roomQuery = await _roomRepository.GetbyId(roomId);
-            var room = roomQuery.FirstOrDefault();
+            var room = _roomRepository.GetbyId(roomId).FirstOrDefault();
             return room?.IsAvailable == true ? room : null;
         }
 
@@ -151,8 +150,7 @@ namespace Application.Services.ReservationServices
 
         private async Task<decimal> GetApplicableDiscount(Guid roomId, DateTime checkInDate)
         {
-            var roomOfferQuery = await _roomOffersRepository.GetAll(ro => ro.RoomId == roomId);
-            var roomOffer = await roomOfferQuery.Include(x => x.Offer).FirstOrDefaultAsync();
+            var roomOffer = await _roomOffersRepository.GetAll(ro => ro.RoomId == roomId).Include(x => x.Offer).FirstOrDefaultAsync();
 
             if (roomOffer == null)
                 return 0;
@@ -179,8 +177,7 @@ namespace Application.Services.ReservationServices
 
         public async Task CheckAndCancelReservation(Guid reservationId)
         {
-            var reservationQuery = await _reservationRepository.GetbyId(reservationId);
-            var reservation = reservationQuery.FirstOrDefault();
+            var reservation = _reservationRepository.GetbyId(reservationId).FirstOrDefault();
 
             if (reservation == null || reservation.ReservationStatusId != ReservationStatusCode.Pending)
                 return;
@@ -197,8 +194,7 @@ namespace Application.Services.ReservationServices
 
         private async Task ReleaseRoom(Guid roomId)
         {
-            var roomQuery = await _roomRepository.GetbyId(roomId);
-            var room = roomQuery.FirstOrDefault();
+            var room = _roomRepository.GetbyId(roomId).FirstOrDefault();
 
             if (room != null)
             {
@@ -209,8 +205,7 @@ namespace Application.Services.ReservationServices
 
         public async Task<ResponseDto<ReservationResponseDto>> GetReservationById(Guid reservationId)
         {
-            var reservationQuery = await _reservationRepository.GetbyId(reservationId);
-            var reservation = reservationQuery.FirstOrDefault();
+            var reservation = _reservationRepository.GetbyId(reservationId).FirstOrDefault();
 
             if (reservation == null)
             {

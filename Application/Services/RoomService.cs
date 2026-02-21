@@ -39,8 +39,7 @@ namespace Application.Services
 
         public async Task<ResponseDto<IEnumerable<GetRoomResponseDto>>> GetAllRooms()
         {
-            var Query = await _roomRepository.GetAll();
-            var rooms = Query.ProjectTo<GetRoomResponseDto>(_mapper.ConfigurationProvider).ToList();
+            var rooms = await _roomRepository.GetAll().ProjectTo<GetRoomResponseDto>(_mapper.ConfigurationProvider).ToListAsync();
             var response = ResponseDto<IEnumerable<GetRoomResponseDto>>.Success(rooms);
             return response;
 
@@ -50,8 +49,7 @@ namespace Application.Services
 
         public async Task<ResponseDto<GetRoomResponseDto>> GetRoomById(Guid roomId)
         {
-            var Query = await _roomRepository.GetbyId(roomId);
-            var room = Query.ProjectTo<GetRoomResponseDto>(_mapper.ConfigurationProvider).FirstOrDefault();
+            var room =await _roomRepository.GetbyId(roomId).ProjectTo<GetRoomResponseDto>(_mapper.ConfigurationProvider).FirstOrDefaultAsync();
             if (room == null)
             {
                 return ResponseDto<GetRoomResponseDto>.Fail(ErrorCode.RoomNotFound, "Room not found");
@@ -112,8 +110,7 @@ namespace Application.Services
 
         private async Task UpdateRoomPicturesAsync(Guid roomId, List<string> newPictureUrls)
         {
-            var existingPicturesQuery = await _roomPictureRepository.GetAll(rp => rp.RoomId == roomId);
-            var existingPictureIds = await existingPicturesQuery.Select(rp => rp.Id).ToListAsync();
+            var existingPictureIds = await _roomPictureRepository.GetAll(rp => rp.RoomId == roomId).Select(rp => rp.Id).ToListAsync();
             
             foreach (var pictureId in existingPictureIds)
             {
@@ -155,15 +152,15 @@ namespace Application.Services
             var validator = _roomFilterValidator.Validate(filterDto);
             if (!validator.IsValid)
                 return ResponseDto<PaginatedListResponseDto<GetRoomResponseDto>>.ValidationFail(validator);
-            var query = await _roomRepository.GetAll(r =>
+            var filteredRooms =  _roomRepository.GetAll(r =>
                 (!filterDto.RoomTypeId.HasValue || r.RoomTypeId == filterDto.RoomTypeId) &&
                 (!filterDto.MinPrice.HasValue || r.PricePerNight >= filterDto.MinPrice) &&
                 (!filterDto.MaxPrice.HasValue || r.PricePerNight <= filterDto.MaxPrice) &&
                 (!filterDto.IsAvailable.HasValue || r.IsAvailable == filterDto.IsAvailable)
-            );
-            var projectedQuery = query.ProjectTo<GetRoomResponseDto>(_mapper.ConfigurationProvider);
+            ).ProjectTo<GetRoomResponseDto>(_mapper.ConfigurationProvider);
+
             var paginatedRooms = await PaginatedListResponseDto<GetRoomResponseDto>.CreateAsync(
-                projectedQuery,
+                filteredRooms,
                 filterDto.PageNumber,
                 filterDto.PageSize
             );

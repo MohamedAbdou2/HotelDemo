@@ -70,9 +70,9 @@ namespace Presentation.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<ResponseViewModel<FeedbackViewModel>> GetById(Guid id)
+        public async Task<ResponseViewModel<FeedbackViewModel>> GetById(Guid reservationId)
         {
-            var result = await _feedbackService.GetByIdAsync(id);
+            var result = await _feedbackService.GetByIdAsync(reservationId);
 
             if (result.Data == null)
                 return ResponseViewModel<FeedbackViewModel>

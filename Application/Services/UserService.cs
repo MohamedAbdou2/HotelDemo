@@ -85,9 +85,7 @@ namespace Application.Services
 
             var user = mapper.Map<User>(dto);
             var result = await userRepository.Add(user);
-
-            var customerRoleQuerable = await roleRepository.GetAll(x => x.Name == "Customer");
-            var customerRole =await customerRoleQuerable.FirstOrDefaultAsync();
+            var customerRole =await roleRepository.GetAll(x => x.Name == "Customer").FirstOrDefaultAsync();
 
             var userRole = new UserRole
             {
@@ -157,8 +155,7 @@ namespace Application.Services
             };
             result = await staffRepository.Add(staff);
 
-            var staffRole = await roleRepository.GetAll(x => x.Name == "Staff");
-            var staffRoleId = staffRole.FirstOrDefault()?.Id;
+            var staffRoleId = roleRepository.GetAll(x => x.Name == "Staff").FirstOrDefault()?.Id;
 
             var userRole = new UserRole
             {
@@ -201,8 +198,7 @@ namespace Application.Services
             if (dto.Email != user.Email || !BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
                 return ResponseDto<string>.Fail(ErrorCode.UserNotFound, "wrong credentials");
 
-            var rolesQurable = await userRoleRepository.GetAll(x => x.UserId == user.Id);
-            var roles = await rolesQurable.Select(x => x.Role.Name).ToListAsync();
+            var roles = await userRoleRepository.GetAll(x => x.UserId == user.Id).Select(x => x.Role.Name).ToListAsync();
 
             var token = new GenerateToken(jwtSettings).GenerateJwtToken(user.Id.ToString(), user.Email, roles);
 
@@ -266,18 +262,14 @@ namespace Application.Services
 
         private async Task<User> GetUserbyEmail(string email)
         {
-
-            var userQurable = await userRepository.GetAll(x => x.Email == email);
-            var user = await userQurable.FirstOrDefaultAsync();
+            var user = await userRepository.GetAll(x => x.Email == email).FirstOrDefaultAsync();
 
             return user;
         }
 
         private async Task<UserOtp> ValidateOtp(string otp)
         {
-
-            var userOtpQuerable = await userotprepo.GetAll(x => x.otp == otp);
-            var userOtp = await userOtpQuerable.FirstOrDefaultAsync();
+            var userOtp = await userotprepo.GetAll(x => x.otp == otp).FirstOrDefaultAsync();
 
             if (userOtp == null || userOtp.ExpiresAt < DateTime.Now)
                 return null;
@@ -311,11 +303,11 @@ namespace Application.Services
 
         private async Task<(UserRole userRole, UserRoleCode targetRoleId, ResponseDto<bool> error)> GetAndValidateUserRole(UpdateRoleDto dto)
         {
-            var role = (await roleRepository.GetAll(x => x.Name == dto.roleName)).FirstOrDefault();
+            var role =await roleRepository.GetAll(x => x.Name == dto.roleName).FirstOrDefaultAsync();
             if (role == null)
                 return (null, default, ResponseDto<bool>.Fail(ErrorCode.RoleNotFound, "الدور غير موجود."));
 
-            var userRole = (await userRoleRepository.GetAll(x => x.UserId == dto.userId)).FirstOrDefault();
+            var userRole = await userRoleRepository.GetAll(x => x.UserId == dto.userId).FirstOrDefaultAsync();
             if (userRole == null)
                 return (null, default, ResponseDto<bool>.Fail(ErrorCode.UserRoleNotFound, "علاقة الدور للمستخدم غير موجودة."));
 
@@ -336,7 +328,7 @@ namespace Application.Services
             }
             else if (oldRole == UserRoleCode.Staff)
             {
-                var staffRecord = (await staffRepository.GetAll(x => x.UserId == userId)).FirstOrDefault();
+                var staffRecord = await staffRepository.GetAll(x => x.UserId == userId).FirstOrDefaultAsync();
                 if (staffRecord != null)
                     await staffRepository.Delete(staffRecord.Id);
             }
@@ -344,12 +336,10 @@ namespace Application.Services
 
         public async Task<bool> IsAdmin(Guid userId)
         {
-            var userRoleQurable = await userRoleRepository.GetAll(x => x.UserId == userId);
-            var userRole = userRoleQurable.FirstOrDefault();
+            var userRole = userRoleRepository.GetAll(x => x.UserId == userId).FirstOrDefault();
             if (userRole == null)
                 return false;
-            var roleQurable = await roleRepository.GetAll(x => x.Id == userRole.RoleId);
-            var role = roleQurable.FirstOrDefault();
+            var role = roleRepository.GetAll(x => x.Id == userRole.RoleId).FirstOrDefault();
             if (role == null)
                 return false;
             return role.Name == "Admin";
@@ -361,8 +351,7 @@ namespace Application.Services
             if (!validationResult.IsValid)
                 return ResponseDto<bool>.ValidationFail(validationResult);
 
-            var userQurable = await userRepository.GetAll(x => x.Id == userId);
-            var user = userQurable.FirstOrDefault();
+            var user = userRepository.GetAll(x => x.Id == userId).FirstOrDefault();
             if (user == null)
                 return ResponseDto<bool>.Fail(ErrorCode.UserNotFound, "User not found");
 
@@ -379,8 +368,7 @@ namespace Application.Services
         {
             var userId = currentUser.GetUserId();
 
-            var userquerable  =await userRepository.GetAll(x=>x.Id == userId);
-            var userDto = await userquerable.ProjectTo<UserDto>(mapper.ConfigurationProvider).FirstOrDefaultAsync();
+            var userDto = await userRepository.GetAll(x => x.Id == userId).ProjectTo<UserDto>(mapper.ConfigurationProvider).FirstOrDefaultAsync();
 
                 return userDto != null ? ResponseDto<UserDto>.Success(userDto)
                 :ResponseDto<UserDto>.Fail(ErrorCode.UserNotFound,"User not found");

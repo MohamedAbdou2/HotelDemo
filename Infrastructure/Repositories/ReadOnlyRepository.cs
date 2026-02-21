@@ -12,7 +12,7 @@ namespace Infrastructure.Repositories
         {
             this.context = applicationDbContext;
         }
-        public async Task<IQueryable<T>> GetAll(Expression<Func<T, bool>>? creiteria = null)
+        public  IQueryable<T> GetAll(Expression<Func<T, bool>>? creiteria = null)
         {
             var query = context.Set<T>().AsQueryable();
 
