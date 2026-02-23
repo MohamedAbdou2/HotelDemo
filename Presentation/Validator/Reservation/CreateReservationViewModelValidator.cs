@@ -18,10 +18,6 @@ namespace Presentation.Validator.Reservation
                 .NotEmpty().WithMessage("CheckOutDate is required.")
                 .GreaterThan(x => x.CheckInDate).WithMessage("CheckOutDate must be after CheckInDate.");
 
-            RuleFor(x => x.TotalPrice)
-                .NotEmpty()
-                .GreaterThan(0).WithMessage("TotalPrice must be greater than zero.");   
-
         }
     }
 }

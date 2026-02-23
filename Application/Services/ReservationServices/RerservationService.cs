@@ -55,7 +55,12 @@ namespace Application.Services.ReservationServices
             var validationResult = _reservationValidator.Validate(reservationDto);
             if (!validationResult.IsValid)
                 return ResponseDto<ReservationResponseDto>.ValidationFail(validationResult);
-
+            if (reservationDto.CustomerId is null)
+            {
+                return ResponseDto<ReservationResponseDto>.Fail(
+                    ErrorCode.ValidationError,
+                    "Customer ID is required");
+            }
             var availabilityCheck = await ValidateRoomAvailability(reservationDto);
             if (availabilityCheck != null)
                 return availabilityCheck;
@@ -129,8 +134,8 @@ namespace Application.Services.ReservationServices
         private async Task SaveReservationAndUpdateRoom(Reservation reservation, Room room)
         {
             await _reservationRepository.Add(reservation);
-           /* room.IsAvailable = false;
-            await _roomRepository.UpdateIncludeAsync(room, x => x.IsAvailable);*/
+            /* room.IsAvailable = false;
+             await _roomRepository.UpdateIncludeAsync(room, x => x.IsAvailable);*/
         }
 
         private void ScheduleReservationExpiration(Guid reservationId)

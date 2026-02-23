@@ -4,6 +4,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using Domain.Repositories;
 using Microsoft.AspNetCore.Http;
 
 namespace Application.Helper
@@ -11,10 +12,11 @@ namespace Application.Helper
     public class CurrentUser
     {
         private readonly IHttpContextAccessor httpContextAccessor;
-
-        public CurrentUser(IHttpContextAccessor httpContextAccessor)
+        private readonly IGenericRepository<Domain.Models.Customer> _customerRepo;
+        public CurrentUser(IHttpContextAccessor httpContextAccessor, IGenericRepository<Domain.Models.Customer> customerRepo)
         {
             this.httpContextAccessor = httpContextAccessor;
+            this._customerRepo = customerRepo;
         }
         public Guid? GetUserId()
         {
@@ -27,5 +29,17 @@ namespace Application.Helper
 
             return currentUserId;
         }
+
+        public string GetUserRole()
+        {
+            var currentUserIdString = httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.Role)?.Value;
+            return currentUserIdString;
+        }
+        public Guid GetCustomerId(Guid userId)
+        {
+            var customerId = _customerRepo.GetAll(x => x.UserId == userId).Select(x => x.Id).FirstOrDefault();
+            return customerId;
+        }
+
     }
 }

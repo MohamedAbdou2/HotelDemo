@@ -2,6 +2,7 @@
 using Application.Helper;
 using Application.Interfaces;
 using AutoMapper;
+using Domain.Enums;
 using HotelDemo.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -39,7 +40,22 @@ namespace Presentation.Controllers
             [FromBody] CreateReservationViewModel model)
         {
             var dto = _mapper.Map<ReservationDto>(model);
-            dto.CreatedById = _currentUser.GetUserId().Value; 
+            var userId = _currentUser.GetUserId().Value;
+            var currentUserRole = _currentUser.GetUserRole();
+            if (currentUserRole == "Staff" || currentUserRole == "Admin")
+            {
+                if(model.CustomerId == null)
+                {
+                    return ResponseViewModel<ReservationResponseViewModel>.Fail(
+                        ErrorCode.ValidationError,
+                        "CustomerId is required for Staff and Admin users.");
+                }
+            } 
+            else
+            {
+                dto.CustomerId = _currentUser.GetCustomerId(userId);
+            }
+            dto.CreatedById = userId;
             var serviceResult = await _reservationService.CreateReservation(dto);
 
             if (!serviceResult.IsSuccess)
