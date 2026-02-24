@@ -28,7 +28,7 @@ The project focuses on clean system design, maintainability, and scalability.
 
 ## 🏗 Architecture & Design
 
-This API follows clean layered architecture principles:
+This API follows Onion architecture :
 
 - Presentation Layer (Controllers)
 - Application Layer (Services / Business Logic)
