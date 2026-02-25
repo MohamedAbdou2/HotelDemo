@@ -106,7 +106,10 @@ namespace Application.Services.PaymentServices
             await CompletePayment(payment, sessionId, paymentIntentId);
             await ConfirmReservation(payment.ReservationId);
             var CustomerEmail = await GetCustomerEmail(payment.Id);
-            await MailSender.SendAsync(CustomerEmail, "Reservation Confirmed", "Your reservation is confirmed");
+            if(CustomerEmail != null) // Check if email is not null
+            {
+                await MailSender.SendAsync(CustomerEmail, "Reservation Confirmed", "Your reservation is confirmed");
+            }
             var paymentDto = _mapper.Map<PaymentResponseDto>(payment);
             return ResponseDto<PaymentResponseDto>.Success(paymentDto, "Payment verified and confirmed successfully");
         }
@@ -118,9 +121,9 @@ namespace Application.Services.PaymentServices
             return email;
         }
 
-        private async Task<Payment> GetPaymentById(Guid paymentId)
+        private async Task<Payment?> GetPaymentById(Guid paymentId)
         {
-            return _paymentRepository.GetbyId(paymentId).FirstOrDefault();
+            return await _paymentRepository.GetbyId(paymentId).FirstOrDefaultAsync();
         }
 
         private async Task CompletePayment(Payment payment, string sessionId, string paymentIntentId)
@@ -198,7 +201,10 @@ namespace Application.Services.PaymentServices
 
         public async Task<ResponseDto<List<PaymentResponseDto>>> GetPaymentHistoryAsync(Guid reservationId)
         {
-            var payments = _paymentRepository.GetAll(p => p.ReservationId == reservationId).OrderByDescending(p => p.CreatedAt).ToList();
+            
+            var payments = await _paymentRepository.GetAll(p => p.ReservationId == reservationId)
+                .OrderByDescending(p => p.CreatedAt)
+                .ToListAsync();
             var paymentDtos = _mapper.Map<List<PaymentResponseDto>>(payments);
 
             return ResponseDto<List<PaymentResponseDto>>.Success(paymentDtos);

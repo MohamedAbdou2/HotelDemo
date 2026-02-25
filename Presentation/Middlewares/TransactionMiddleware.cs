@@ -12,7 +12,16 @@ namespace HotelDemo.Middlewares
         }
         public async Task InvokeAsync(HttpContext context, RequestDelegate next)
         {
-            using var transaction = _context.Database.BeginTransaction();
+            // Fix: skip transaction for read-only requests
+            if (HttpMethods.IsGet(context.Request.Method) ||
+                HttpMethods.IsHead(context.Request.Method) ||
+                HttpMethods.IsOptions(context.Request.Method))
+            {
+                await next(context);
+                return;
+            }
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
                 await next(context);

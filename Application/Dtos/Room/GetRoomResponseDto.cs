@@ -7,8 +7,7 @@
         public string Type { get; set; } = string.Empty;
         public decimal PricePerNight { get; set; }
         public bool IsAvailable { get; set; }
-
+        public byte[] RowVersion { get; set; } = null!;
         public IEnumerable<string> RoomPictures { get; set; } = new List<string>();
-
     }
 }

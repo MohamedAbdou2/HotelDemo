@@ -3,7 +3,7 @@ using Application.Dtos.Offers;
 
 namespace Application.Interfaces
 {
-    public interface IOffers
+    public interface IOfferService
     {
         Task<ResponseDto<object>> CreateOfferAsync(CreateOfferDto dto);
         Task<ResponseDto<IEnumerable<OfferResponseDto>>> GetAllOffersAsync();

@@ -10,6 +10,7 @@ using Domain.Models;
 using Domain.Repositories;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
+using Org.BouncyCastle.Bcpg.Sig;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -57,7 +58,7 @@ namespace Application.Services
             var response = ResponseDto<GetRoomResponseDto>.Success(room);
             return response;
         }
-
+      
         public async Task<ResponseDto<bool>> CreateRoom(CreateRoomRequestDto dto)
         {
             var validator = _createRoomValidator.Validate(dto);
@@ -152,7 +153,7 @@ namespace Application.Services
             var validator = _roomFilterValidator.Validate(filterDto);
             if (!validator.IsValid)
                 return ResponseDto<PaginatedListResponseDto<GetRoomResponseDto>>.ValidationFail(validator);
-            var filteredRooms =  _roomRepository.GetAll(r =>
+            var filteredRooms = _roomRepository.GetAll(r =>
                 (!filterDto.RoomTypeId.HasValue || r.RoomTypeId == filterDto.RoomTypeId) &&
                 (!filterDto.MinPrice.HasValue || r.PricePerNight >= filterDto.MinPrice) &&
                 (!filterDto.MaxPrice.HasValue || r.PricePerNight <= filterDto.MaxPrice) &&
@@ -168,6 +169,7 @@ namespace Application.Services
             return response;
 
         }
+       
     }
 
 }

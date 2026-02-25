@@ -3,7 +3,7 @@ using Presentation.ViewModels.Reservation;
 
 namespace Presentation.Validator.Reservation
 {
-    public class CreateReservationViewModelValidator :AbstractValidator<CreateReservationViewModel>
+    public class CreateReservationViewModelValidator : AbstractValidator<CreateReservationViewModel>
     {
         public CreateReservationViewModelValidator()
         {
@@ -12,12 +12,11 @@ namespace Presentation.Validator.Reservation
 
             RuleFor(x => x.CheckInDate)
                 .NotEmpty().WithMessage("CheckInDate is required.")
-                .GreaterThan(DateTime.Now).WithMessage("CheckInDate must be in the future.");
+                .GreaterThan(DateTime.UtcNow).WithMessage("CheckInDate must be in the future.");
 
             RuleFor(x => x.CheckOutDate)
                 .NotEmpty().WithMessage("CheckOutDate is required.")
                 .GreaterThan(x => x.CheckInDate).WithMessage("CheckOutDate must be after CheckInDate.");
-
         }
     }
 }

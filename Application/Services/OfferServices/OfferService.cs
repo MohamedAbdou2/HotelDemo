@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Application.Services.OfferServices
 {
-    public class OfferService : IOffers
+    public class OfferService : IOfferService
     {
         private readonly IGenericRepository<Offer> _offerRepo;
         private readonly IGenericRepository<Room> _roomRepo;
@@ -22,6 +22,7 @@ namespace Application.Services.OfferServices
             _offerRepo = repository;
             _mapper = mapper;
             _roomRepo = roomRepo;
+            
         }
 
         public async Task<ResponseDto<object>> CreateOfferAsync(CreateOfferDto dto)
@@ -100,6 +101,6 @@ namespace Application.Services.OfferServices
             return ResponseDto<object>.Success(null, "Offer deleted");
 
         }
-
+      
     }
 }

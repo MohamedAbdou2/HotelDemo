@@ -1,6 +1,8 @@
 ﻿using Application.Dtos;
 using Application.Dtos.Reservation;
+using Application.Dtos.Room;
 using Application.Interfaces;
+using Application.Services.OfferServices;
 using AutoMapper;
 using Domain.Enums;
 using Domain.Models;
@@ -13,35 +15,37 @@ namespace Application.Services.ReservationServices
 {
     public class RerservationService : IReservationService
     {
-        private readonly IGenericRepository<Room> _roomRepository;
+        private readonly IRoomService _roomServices;
         private readonly IGenericRepository<Reservation> _reservationRepository;
-        private readonly IGenericRepository<Payment> _paymentRepository;
+
         private readonly IMapper _mapper;
         private readonly IValidator<ReservationDto> _reservationValidator;
         private readonly IBackgroundJobService _backgroundJobService;
-        private readonly IReadOnlyRepository<RoomOffer> _roomOffersRepository;
+        private readonly IRoomOfferService _roomOffersServices;
 
         private const int ReservationExpirationMinutes = 10;
         private const int MaxRetryAttempts = 3;
         private const int BaseRetryDelayMilliseconds = 200;
         private const int MaxRetryJitterMilliseconds = 50;
 
-        public RerservationService(
-            IGenericRepository<Room> roomRepository,
+        public RerservationService
+            (
             IGenericRepository<Reservation> reservationRepository,
-            IGenericRepository<Payment> paymentRepository,
             IMapper mapper,
             IValidator<ReservationDto> reservationValidator,
             IBackgroundJobService backgroundJobService,
-            IReadOnlyRepository<RoomOffer> roomOffersRepository)
+            IRoomService roomServices,
+            IRoomOfferService roomOffersServices
+            )
         {
-            _roomRepository = roomRepository;
+
             _reservationRepository = reservationRepository;
-            _paymentRepository = paymentRepository;
+
             _mapper = mapper;
             _reservationValidator = reservationValidator;
             _backgroundJobService = backgroundJobService;
-            _roomOffersRepository = roomOffersRepository;
+            _roomServices = roomServices;
+            _roomOffersServices = roomOffersServices;
         }
 
         public async Task<ResponseDto<ReservationResponseDto>> CreateReservation(ReservationDto reservationDto)
@@ -61,34 +65,37 @@ namespace Application.Services.ReservationServices
                     ErrorCode.ValidationError,
                     "Customer ID is required");
             }
-            var availabilityCheck = await ValidateRoomAvailability(reservationDto);
+
+            var (room, roomError) = await ValidateAndGetRoom(reservationDto.RoomId);
+            if (roomError != null)
+                return roomError;
+
+            var availabilityCheck = await ValidateRoomReservationDate(reservationDto);
             if (availabilityCheck != null)
                 return availabilityCheck;
 
-            var room = await GetRoomById(reservationDto.RoomId);
-            if (room == null)
-                return ResponseDto<ReservationResponseDto>.Fail(ErrorCode.RoomNotFound,
-                    "The room is currently not available for booking.");
+            var reservation = await CreateReservationEntity(reservationDto, room!);
 
-            var reservation = await CreateReservationEntity(reservationDto, room);
-            await SaveReservationAndUpdateRoom(reservation, room);
+        
+            await SaveReservationAndUpdateRoom(reservation, room!);
             ScheduleReservationExpiration(reservation.Id);
 
-            var response = BuildReservationResponse(reservation, room);
+            var response = BuildReservationResponse(reservation, room!);
             return ResponseDto<ReservationResponseDto>.Success(response,
                 $"Reservation created successfully! Please complete the payment within {ReservationExpirationMinutes} minutes.");
         }
 
-        private IAsyncPolicy CreateRetryPolicy()
+      //use static method + Random.Shared thread-safe 
+        private static IAsyncPolicy CreateRetryPolicy()
         {
             return Policy
                 .Handle<DbUpdateConcurrencyException>()
                 .WaitAndRetryAsync(MaxRetryAttempts, retryAttempt =>
                     TimeSpan.FromMilliseconds(BaseRetryDelayMilliseconds * retryAttempt) +
-                    TimeSpan.FromMilliseconds(new Random().Next(0, MaxRetryJitterMilliseconds)));
+                    TimeSpan.FromMilliseconds(Random.Shared.Next(0, MaxRetryJitterMilliseconds)));
         }
 
-        private async Task<ResponseDto<ReservationResponseDto>> ValidateRoomAvailability(ReservationDto reservationDto)
+        private async Task<ResponseDto<ReservationResponseDto>?> ValidateRoomReservationDate(ReservationDto reservationDto)
         {
             var isAvailable = await IsRoomAvailable(
                 reservationDto.RoomId,
@@ -102,40 +109,41 @@ namespace Application.Services.ReservationServices
             return null;
         }
 
-        private async Task<Room> GetRoomById(Guid roomId)
-        {
-            var room = _roomRepository.GetbyId(roomId).FirstOrDefault();
-            return room?.IsAvailable == true ? room : null;
-        }
 
-        private async Task<Reservation> CreateReservationEntity(ReservationDto reservationDto, Room room)
+
+        private async Task<Reservation> CreateReservationEntity(ReservationDto reservationDto, GetRoomResponseDto room)
         {
             var reservation = _mapper.Map<Reservation>(reservationDto);
             reservation.ExpiresAt = DateTime.UtcNow.AddMinutes(ReservationExpirationMinutes);
             reservation.ReservationStatusId = ReservationStatusCode.Pending;
-
-            var discount = await GetApplicableDiscount(reservationDto.RoomId, reservationDto.CheckInDate);
             var numberOfNights = (decimal)(reservationDto.CheckOutDate - reservationDto.CheckInDate).TotalDays;
-
-            reservation.Discount = discount;
-            reservation.TotalPrice = CalculateTotalPrice(room.PricePerNight, numberOfNights, discount);
+            reservation.Discount = await GetApplicableDiscount(reservationDto);
+            reservation.TotalPrice = CalculateTotalPrice(room.PricePerNight, numberOfNights, reservation.Discount ?? 0);
 
             return reservation;
         }
 
-        private decimal CalculateTotalPrice(decimal pricePerNight, decimal numberOfNights, decimal discountPercentage)
+     
+        private static decimal CalculateTotalPrice(decimal pricePerNight, decimal numberOfNights, decimal discountPercentage)
         {
+            var clampedDiscount = Math.Clamp(discountPercentage, 0, 100);
             var subtotal = pricePerNight * numberOfNights;
-            return discountPercentage > 0
-                ? subtotal * (1 - discountPercentage / 100)
+            var total = clampedDiscount > 0
+                ? subtotal * (1 - clampedDiscount / 100)
                 : subtotal;
+            return Math.Round(total, 2);
         }
 
-        private async Task SaveReservationAndUpdateRoom(Reservation reservation, Room room)
+        private async Task SaveReservationAndUpdateRoom(Reservation reservation, GetRoomResponseDto room)
         {
+          
+            await _roomServices.UpdateRoom(room.Id, new UpdateRoomRequestDto
+            {
+                
+                RowVersion = room.RowVersion
+            });
+
             await _reservationRepository.Add(reservation);
-            /* room.IsAvailable = false;
-             await _roomRepository.UpdateIncludeAsync(room, x => x.IsAvailable);*/
         }
 
         private void ScheduleReservationExpiration(Guid reservationId)
@@ -145,7 +153,7 @@ namespace Application.Services.ReservationServices
                 TimeSpan.FromMinutes(ReservationExpirationMinutes));
         }
 
-        private ReservationResponseDto BuildReservationResponse(Reservation reservation, Room room)
+        private ReservationResponseDto BuildReservationResponse(Reservation reservation, GetRoomResponseDto room)
         {
             var response = _mapper.Map<ReservationResponseDto>(reservation);
             response.RoomNumber = room.RoomNumber;
@@ -153,17 +161,19 @@ namespace Application.Services.ReservationServices
             return response;
         }
 
-        private async Task<decimal> GetApplicableDiscount(Guid roomId, DateTime checkInDate)
+        private async Task<decimal> GetApplicableDiscount(ReservationDto dto)
         {
-            var roomOffer = await _roomOffersRepository.GetAll(ro => ro.RoomId == roomId).Include(x => x.Offer).FirstOrDefaultAsync();
-
-            if (roomOffer == null)
+            if (dto.OfferId is not { } offerId)
                 return 0;
 
-            var offer = roomOffer.Offer;
+            var roomOffer = await _roomOffersServices.GetOfferForRoomAsync(dto.RoomId, offerId);
+
+            if (roomOffer?.Data is not { } offer)
+                return 0;
+
             var isOfferValid = offer.IsActive &&
-                               offer.StartDate <= checkInDate &&
-                               offer.EndDate >= checkInDate;
+                               offer.StartDate <= dto.CheckInDate &&
+                               offer.EndDate >= dto.CheckInDate;
 
             return isOfferValid ? offer.DiscountPercentage : 0;
         }
@@ -182,13 +192,13 @@ namespace Application.Services.ReservationServices
 
         public async Task CheckAndCancelReservation(Guid reservationId)
         {
-            var reservation = _reservationRepository.GetbyId(reservationId).FirstOrDefault();
+            var reservation = await _reservationRepository.GetbyId(reservationId).FirstOrDefaultAsync();
 
             if (reservation == null || reservation.ReservationStatusId != ReservationStatusCode.Pending)
                 return;
 
             await CancelReservation(reservation);
-            await ReleaseRoom(reservation.RoomId);
+
         }
 
         private async Task CancelReservation(Reservation reservation)
@@ -197,20 +207,12 @@ namespace Application.Services.ReservationServices
             await _reservationRepository.UpdateIncludeAsync(reservation, nameof(Reservation.ReservationStatusId));
         }
 
-        private async Task ReleaseRoom(Guid roomId)
-        {
-            var room = _roomRepository.GetbyId(roomId).FirstOrDefault();
 
-            if (room != null)
-            {
-                room.IsAvailable = true;
-                await _roomRepository.Update(room);
-            }
-        }
 
         public async Task<ResponseDto<ReservationResponseDto>> GetReservationById(Guid reservationId)
         {
-            var reservation = _reservationRepository.GetbyId(reservationId).FirstOrDefault();
+            // Fix: use async FirstOrDefaultAsync
+            var reservation = await _reservationRepository.GetbyId(reservationId).FirstOrDefaultAsync();
 
             if (reservation == null)
             {
@@ -226,8 +228,23 @@ namespace Application.Services.ReservationServices
 
         public async Task<bool> IsReservationExist(Guid id) => await _reservationRepository.IsExist(x => x.Id == id);
 
-    }
 
+
+        private async Task<(GetRoomResponseDto? Room, ResponseDto<ReservationResponseDto>? Error)> ValidateAndGetRoom(Guid roomId)
+        {
+            var room = (await _roomServices.GetRoomById(roomId)).Data;
+
+            if (room == null)
+                return (null, ResponseDto<ReservationResponseDto>.Fail(ErrorCode.RoomNotFound,
+                    "The room is currently not available for booking."));
+
+            if (!room.IsAvailable)
+                return (null, ResponseDto<ReservationResponseDto>.Fail(ErrorCode.RoomNotAvailable,
+                    "The room is currently not available for booking."));
+
+            return (room, null);
+        }
+    }
 
 
 
