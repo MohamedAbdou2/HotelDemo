@@ -13,10 +13,9 @@ namespace Application.Interfaces
         Task<ResponseDto<bool>> UpdateRoom(Guid roomId, UpdateRoomRequestDto dto);
 
         Task<ResponseDto<bool>> DeleteRoom(Guid roomId);
-
         Task<ResponseDto<PaginatedListResponseDto<GetRoomResponseDto>>> GetRoomsByFilter(RoomFilterRequestDto filterDto);
 
-
+       
 
     }
 }

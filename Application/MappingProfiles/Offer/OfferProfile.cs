@@ -5,9 +5,9 @@ using Domain.Models;
 
 namespace Application.MappingProfiles.Offer
 {
-    public class OfferDtoProfile : Profile
+    public class OfferProfile : Profile
     {
-        public OfferDtoProfile()
+        public OfferProfile()
         {
 
             CreateMap<Domain.Models.Offer, OfferResponseDto>()

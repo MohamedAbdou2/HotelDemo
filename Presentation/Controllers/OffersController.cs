@@ -13,13 +13,13 @@ namespace Presentation.Controllers
     [Route("api/[Controller]/[Action]")]
     public class OffersController : ControllerBase
     {
-        private readonly IOffers _offerService;
+        private readonly IOfferService _offerService;
         private readonly IMapper _mapper;
         private readonly IValidator<CreateOfferViewModel> _createOfferValidator;
         private readonly IValidator<UpdateOfferViewModel> _updateOfferValidator;
 
         public OffersController(
-            IOffers offerService,
+            IOfferService offerService,
             IMapper mapper,
             IValidator<CreateOfferViewModel> createOfferValidator,
             IValidator<UpdateOfferViewModel> updateOfferValidator)

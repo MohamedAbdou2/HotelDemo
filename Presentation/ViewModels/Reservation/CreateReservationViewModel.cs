@@ -6,6 +6,8 @@ namespace Presentation.ViewModels.Reservation
     public class CreateReservationViewModel
     {
         public Guid RoomId { get; set; }
+        public Guid? OfferId { get; set; }
+        
         public Guid ? CustomerId { get; set; }
         public DateTime CheckInDate { get; set; }
         public DateTime CheckOutDate { get; set; }

@@ -12,7 +12,13 @@ namespace HotelDemo.Middlewares
         }
         public async Task InvokeAsync(HttpContext context, RequestDelegate next)
         {
-            using var transaction = _context.Database.BeginTransaction();
+            if (HttpMethods.IsGet(context.Request.Method))
+            {
+                await next(context);
+                return;
+            }
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
                 await next(context);

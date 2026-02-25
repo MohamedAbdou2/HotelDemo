@@ -106,7 +106,10 @@ namespace Application.Services.PaymentServices
             await CompletePayment(payment, sessionId, paymentIntentId);
             await ConfirmReservation(payment.ReservationId);
             var CustomerEmail = await GetCustomerEmail(payment.Id);
-            await MailSender.SendAsync(CustomerEmail, "Reservation Confirmed", "Your reservation is confirmed");
+            if(CustomerEmail != null) // Check if email is not null
+            {
+                await MailSender.SendAsync(CustomerEmail, "Reservation Confirmed", "Your reservation is confirmed");
+            }
             var paymentDto = _mapper.Map<PaymentResponseDto>(payment);
             return ResponseDto<PaymentResponseDto>.Success(paymentDto, "Payment verified and confirmed successfully");
         }
