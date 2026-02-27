@@ -42,10 +42,10 @@
         FeedbackAlreadyExist = 502,
         FeedBackDoesNotExist = 503,
         FailedToDeleteFeedback = 504,
-        FailedToUpdateFeedback = 505
+        FailedToUpdateFeedback = 505,
+        Forbidden = 506
 
 
 
-     
     }
 }

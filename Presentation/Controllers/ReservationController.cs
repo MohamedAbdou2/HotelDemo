@@ -98,17 +98,10 @@ namespace Presentation.Controllers
                     serviceResult.ErrorCode,
                     serviceResult.Message);
 
-            serviceResult.Data!.PaymentUrl = _linkGenerator.GetUriByAction(
-                HttpContext,
-                action: "InitiatePayment",
-                controller: "Payment",
-                values: new { reservationId = serviceResult.Data.Id }) ?? string.Empty;
+     
 
             var viewModel = _mapper.Map<ReservationResponseViewModel>(serviceResult.Data);
-            viewModel.GetDetailsUrl = _linkGenerator.GetUriByAction(
-                HttpContext,
-                action: nameof(GetReservationById),
-                values: new { id = serviceResult.Data.Id }) ?? string.Empty;
+        
 
             // 4. Return ResponseViewModel (same as UserController)
             return ResponseViewModel<ReservationResponseViewModel>.Success(

@@ -1,6 +1,7 @@
 ﻿using Application.Dtos;
 using Application.Dtos.Reservation;
 using Application.Dtos.Room;
+using Application.Helper;
 using Application.Interfaces;
 using Application.Services.OfferServices;
 using AutoMapper;
@@ -22,7 +23,7 @@ namespace Application.Services.ReservationServices
         private readonly IValidator<ReservationDto> _reservationValidator;
         private readonly IBackgroundJobService _backgroundJobService;
         private readonly IRoomOfferService _roomOffersServices;
-
+        private readonly CurrentUser _currentUser;
         private const int ReservationExpirationMinutes = 10;
         private const int MaxRetryAttempts = 3;
         private const int BaseRetryDelayMilliseconds = 200;
@@ -35,17 +36,16 @@ namespace Application.Services.ReservationServices
             IValidator<ReservationDto> reservationValidator,
             IBackgroundJobService backgroundJobService,
             IRoomService roomServices,
-            IRoomOfferService roomOffersServices
-            )
+            IRoomOfferService roomOffersServices,
+            CurrentUser currentUser)
         {
-
             _reservationRepository = reservationRepository;
-
             _mapper = mapper;
             _reservationValidator = reservationValidator;
             _backgroundJobService = backgroundJobService;
             _roomServices = roomServices;
             _roomOffersServices = roomOffersServices;
+            _currentUser = currentUser;
         }
 
         public async Task<ResponseDto<ReservationResponseDto>> CreateReservation(ReservationDto reservationDto)
@@ -211,7 +211,7 @@ namespace Application.Services.ReservationServices
 
         public async Task<ResponseDto<ReservationResponseDto>> GetReservationById(Guid reservationId)
         {
-            // Fix: use async FirstOrDefaultAsync
+            
             var reservation = await _reservationRepository.GetbyId(reservationId).FirstOrDefaultAsync();
 
             if (reservation == null)
@@ -219,7 +219,18 @@ namespace Application.Services.ReservationServices
                 return ResponseDto<ReservationResponseDto>.Fail(ErrorCode.NotFound,
                     "Reservation not found.");
             }
-
+            var currentUserRole = _currentUser.GetUserRole();
+            if (currentUserRole != "Admin" && currentUserRole != "Staff")
+            {
+                var userId = _currentUser.GetUserId();
+                var customerId = userId.HasValue ? _currentUser.GetCustomerId(userId.Value) : Guid.Empty;
+                if (reservation.CustomerId != customerId)
+                {
+                    return ResponseDto<ReservationResponseDto>.Fail(
+                        ErrorCode.Forbidden,
+                        "You are not authorized to view this reservation.");
+                }
+            }
             var response = _mapper.Map<ReservationResponseDto>(reservation);
             response.Status = reservation.ReservationStatusId.ToString();
 

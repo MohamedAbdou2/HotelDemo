@@ -34,7 +34,7 @@ namespace Application.Dtos.Room.RoomValidators
                 .WithMessage("A room cannot have more than 10 pictures.");
         }
 
-        private bool BeValidRoomType(int roomTypeId)
+        private bool BeValidRoomType(int? roomTypeId)
         {
             return Enum.IsDefined(typeof(RoomTypeCode), roomTypeId);
         }
