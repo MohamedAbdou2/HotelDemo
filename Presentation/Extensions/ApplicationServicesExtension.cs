@@ -105,12 +105,13 @@ namespace Presentation.Extensions
 
 
            services.AddScoped<IBackgroundJobService, HangfireJobService>();
-
+            services.AddScoped<CurrentUser>();
+            services.AddScoped<CustomerContext>();
 
             services.AddScoped<IStripePaymentService, StripePaymentService>();
             services.AddHttpContextAccessor();
 
-            services.AddScoped<CurrentUser>();
+          
         }
     }
 }

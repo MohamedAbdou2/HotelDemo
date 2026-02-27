@@ -21,17 +21,20 @@ namespace Presentation.Controllers
         private readonly LinkGenerator _linkGenerator;
         private readonly IMapper _mapper;
         private readonly CurrentUser _currentUser;
+        private readonly CustomerContext _customerContext;
 
         public ReservationController(
             IReservationService reservationService,
             LinkGenerator linkGenerator,
             IMapper mapper,
-            CurrentUser currentUser)
+            CurrentUser currentUser,
+            CustomerContext customerContext)
         {
             _reservationService = reservationService;
             _linkGenerator = linkGenerator;
             _mapper = mapper;
             _currentUser = currentUser;
+            _customerContext = customerContext;
         }
 
 
@@ -53,7 +56,7 @@ namespace Presentation.Controllers
             } 
             else
             {
-                dto.CustomerId = _currentUser.GetCustomerId(userId);
+                dto.CustomerId = _customerContext.GetCustomerId();
             }
             dto.CreatedById = userId;
             var serviceResult = await _reservationService.CreateReservation(dto);
