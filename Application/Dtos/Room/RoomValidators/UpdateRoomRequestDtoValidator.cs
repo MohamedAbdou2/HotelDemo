@@ -36,7 +36,10 @@ namespace Application.Dtos.Room.RoomValidators
 
         private bool BeValidRoomType(int? roomTypeId)
         {
-            return Enum.IsDefined(typeof(RoomTypeCode), roomTypeId);
+            if (!roomTypeId.HasValue)
+                return true;
+
+            return Enum.IsDefined(typeof(RoomTypeCode), roomTypeId.Value);
         }
 
         private bool BeValidImageUrl(string url)
@@ -44,7 +47,5 @@ namespace Application.Dtos.Room.RoomValidators
             return Uri.TryCreate(url, UriKind.Absolute, out var uri)
                    && (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps);
         }
-
-
     }
 }

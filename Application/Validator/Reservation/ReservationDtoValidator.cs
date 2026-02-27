@@ -30,9 +30,7 @@ namespace Application.Validator.Reservation
                 .NotEmpty().WithMessage("CheckOutDate is required.")
                 .GreaterThan(x => x.CheckInDate).WithMessage("CheckOutDate must be after CheckInDate.");
 
-            RuleFor(x => x.TotalPrice)
-                .GreaterThan(0).WithMessage("TotalPrice must be greater than zero.");
-
+         
             RuleFor(x => x.ReservationStatusId)
                 .IsInEnum().WithMessage("ReservationStatusId must be a valid enum value.")
                 .Must(x => x >= ReservationStatusCode.Pending && x <= ReservationStatusCode.Cancelled);

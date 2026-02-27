@@ -5,6 +5,7 @@ using Application.Helper;
 using Application.Interfaces;
 using Application.Services.OfferServices;
 using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using Domain.Enums;
 using Domain.Models;
 using Domain.Repositories;
@@ -18,12 +19,12 @@ namespace Application.Services.ReservationServices
     {
         private readonly IRoomService _roomServices;
         private readonly IGenericRepository<Reservation> _reservationRepository;
-
         private readonly IMapper _mapper;
         private readonly IValidator<ReservationDto> _reservationValidator;
         private readonly IBackgroundJobService _backgroundJobService;
         private readonly IRoomOfferService _roomOffersServices;
         private readonly CurrentUser _currentUser;
+        private readonly CustomerContext _customerContext;
         private const int ReservationExpirationMinutes = 10;
         private const int MaxRetryAttempts = 3;
         private const int BaseRetryDelayMilliseconds = 200;
@@ -37,7 +38,8 @@ namespace Application.Services.ReservationServices
             IBackgroundJobService backgroundJobService,
             IRoomService roomServices,
             IRoomOfferService roomOffersServices,
-            CurrentUser currentUser)
+            CurrentUser currentUser,
+            CustomerContext customerContext)
         {
             _reservationRepository = reservationRepository;
             _mapper = mapper;
@@ -46,6 +48,7 @@ namespace Application.Services.ReservationServices
             _roomServices = roomServices;
             _roomOffersServices = roomOffersServices;
             _currentUser = currentUser;
+            _customerContext = customerContext;
         }
 
         public async Task<ResponseDto<ReservationResponseDto>> CreateReservation(ReservationDto reservationDto)
@@ -76,7 +79,7 @@ namespace Application.Services.ReservationServices
 
             var reservation = await CreateReservationEntity(reservationDto, room!);
 
-        
+
             await SaveReservationAndUpdateRoom(reservation, room!);
             ScheduleReservationExpiration(reservation.Id);
 
@@ -85,7 +88,7 @@ namespace Application.Services.ReservationServices
                 $"Reservation created successfully! Please complete the payment within {ReservationExpirationMinutes} minutes.");
         }
 
-      //use static method + Random.Shared thread-safe 
+        //use static method + Random.Shared thread-safe 
         private static IAsyncPolicy CreateRetryPolicy()
         {
             return Policy
@@ -123,7 +126,7 @@ namespace Application.Services.ReservationServices
             return reservation;
         }
 
-     
+
         private static decimal CalculateTotalPrice(decimal pricePerNight, decimal numberOfNights, decimal discountPercentage)
         {
             var clampedDiscount = Math.Clamp(discountPercentage, 0, 100);
@@ -136,10 +139,10 @@ namespace Application.Services.ReservationServices
 
         private async Task SaveReservationAndUpdateRoom(Reservation reservation, GetRoomResponseDto room)
         {
-          
+
             await _roomServices.UpdateRoom(room.Id, new UpdateRoomRequestDto
             {
-                
+
                 RowVersion = room.RowVersion
             });
 
@@ -211,8 +214,10 @@ namespace Application.Services.ReservationServices
 
         public async Task<ResponseDto<ReservationResponseDto>> GetReservationById(Guid reservationId)
         {
-            
-            var reservation = await _reservationRepository.GetbyId(reservationId).FirstOrDefaultAsync();
+
+            var reservation = await _reservationRepository.GetbyId(reservationId)
+                .Include(x => x.Room)
+                .Include(c => c.Customer).ProjectTo<ReservationResponseDto>(_mapper.ConfigurationProvider).FirstOrDefaultAsync();
 
             if (reservation == null)
             {
@@ -223,7 +228,7 @@ namespace Application.Services.ReservationServices
             if (currentUserRole != "Admin" && currentUserRole != "Staff")
             {
                 var userId = _currentUser.GetUserId();
-                var customerId = userId.HasValue ? _currentUser.GetCustomerId(userId.Value) : Guid.Empty;
+                var customerId = userId.HasValue ? _customerContext.GetCustomerId() : Guid.Empty;
                 if (reservation.CustomerId != customerId)
                 {
                     return ResponseDto<ReservationResponseDto>.Fail(

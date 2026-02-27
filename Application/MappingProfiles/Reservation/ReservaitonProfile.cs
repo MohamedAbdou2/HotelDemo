@@ -14,7 +14,9 @@ namespace Application.MappingProfiles.Reservation
         {
 
             CreateMap<ReservationDto, Domain.Models.Reservation>();
-            CreateMap<Domain.Models.Reservation , ReservationResponseDto>();
+            CreateMap<Domain.Models.Reservation , ReservationResponseDto>().
+                ForMember(x=>x.RoomNumber, opt=> opt.MapFrom(r=>r.Room.RoomNumber)).
+                ForMember(x=>x.CustomerName , opt=>opt.MapFrom(c=>c.Customer.User.FirstName+" "+ c.Customer.User.LastName));
 
         }
     }
