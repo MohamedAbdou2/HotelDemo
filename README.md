@@ -75,4 +75,4 @@ Authorization: Bearer {your_token}
 
 ## 📸 API Overview
 
-![Swagger UI](localhost_7181_swagger_index.html)
+![Swagger UI](swagger.png)
