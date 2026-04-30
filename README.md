@@ -69,6 +69,7 @@ The system uses **JWT Bearer Authentication**.
 
 ```http
 Authorization: Bearer {your_token}
+```
 
 ---
 
