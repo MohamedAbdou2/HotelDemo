@@ -69,3 +69,9 @@ The system uses **JWT Bearer Authentication**.
 
 ```http
 Authorization: Bearer {your_token}
+
+---
+
+## 📸 API Overview
+
+![Swagger UI](localhost_7181_swagger_index.html)
