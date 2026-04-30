@@ -73,6 +73,3 @@ Authorization: Bearer {your_token}
 
 ---
 
-## 📸 API Overview
-
-![Swagger UI](swagger.png)
