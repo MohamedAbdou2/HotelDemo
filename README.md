@@ -67,7 +67,6 @@ The system uses **JWT Bearer Authentication**.
 2. JWT token is generated
 3. Token must be sent in Authorization header for protected endpoints
 
-```http
-```
+
 
 
