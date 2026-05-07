@@ -68,8 +68,6 @@ The system uses **JWT Bearer Authentication**.
 3. Token must be sent in Authorization header for protected endpoints
 
 ```http
-Authorization: Bearer {your_token}
 ```
 
----
 
